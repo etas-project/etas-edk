@@ -1,0 +1,48 @@
+EDK implementation has unresolved compiler, frontend, CLI, and package-manager
+gaps that are not std/runtime substrate requirements.
+
+Current gaps:
+
+- package-defined action metadata for rows such as
+  `EdkWorkspace.read<R>` and `EdkGitHub.issue_create<R>`;
+- package metadata emission for `edk-http` root/API flows is now covered by
+  `std-requirements/http/positive/external_root_api_effect_facts`; broader
+  dependency packages still need fixture coverage for nominal evidence records,
+  specs, impl evidence, and parameterized action rows;
+- payload-aware policy metadata that can inspect checked request evidence
+  without putting method or host in action `<...>`;
+- package-defined typed error raising through std `Error<E>.raise` without
+  redeclaring `Error` locally;
+- package metadata export for public record types, aliases, nominal evidence
+  records, specs, impl evidence, and public effect summary types;
+- imported transparent record aliases still lose constructor/field facts in
+  package checks, even for EDK shapes now declared with `alias`;
+- local path dependency materialization that prepares dependency
+  `.etas/package.etasmeta` and `.etas/package-index.json` artifacts through
+  the package manager;
+- package-mode runtime import values for dependency flows used by executable
+  fixtures;
+- CLI workspace-manifest handling for root `[workspace]` manifests;
+- `etas effects <file> --flow <name>` filtering public flows without requiring
+  the selected flow to be a package `[[bin]]` entry;
+- source-file graph checking inside package roots while package lock metadata is
+  blocked;
+- consistent parser/frontend handling for contextual keywords used as record
+  field names in record literals.
+- source-bodied generic tools with explicit rows, for example
+  `public tool read_bytes<R ~ WorkspaceRegion, P ~ ReadablePath<R>>(...)
+  ![EdkWorkspace.read<R>, ...]`, currently report
+  `effect::EffectOutsideDeclaredRow`.
+
+Related blockers:
+
+- `tests/fixtures/negative/custom_action_scope_gap`;
+- `tests/blocked/callback-latent-effects.txt`;
+- `tests/package-status.md`;
+- package-mode blockers for individual fixtures under `tests/blocked/`.
+
+Decision:
+
+Keep these gaps visible as frontend/package tooling work. Do not add
+package-private registry entries, hand-written metadata, fallback effect rows,
+or fake handlers in EDK source to make current fixtures pass.

@@ -1,0 +1,20 @@
+[package]
+name = "edk-web-public-http-url-result-not-bare-url"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving Result<PublicHttpUrl, HttpError> cannot be consumed as bare Url by edk-web APIs"
+repository = "https://example.invalid/etas-edk-fixtures/edk-web-public-http-url-result-not-bare-url"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+edk_web = { path = "../../../../packages/edk-web", import = "edk.web" }
+
+[[bin]]
+name = "edk-web-public-http-url-result-not-bare-url"
+module = "tests.edk.negative.edk_web_public_http_url_result_not_bare_url.main"
+flow = "main"

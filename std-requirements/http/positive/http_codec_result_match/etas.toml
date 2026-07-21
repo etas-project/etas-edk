@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-codec-result-match"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive std requirements probe for source-level HTTP codec Result matching"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-codec-result-match"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-codec-result-match"
+module = "std_requirements.http.positive.http_codec_result_match.main"
+flow = "main"

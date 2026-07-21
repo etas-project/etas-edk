@@ -1,0 +1,18 @@
+[package]
+name = "edk-http-private-host-client-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving high-level std HTTP host clients are not available"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-private-host-client-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "edk-http-private-host-client-forbidden"
+module = "tests.edk.negative.edk_http_private_host_client_forbidden.main"
+flow = "main"

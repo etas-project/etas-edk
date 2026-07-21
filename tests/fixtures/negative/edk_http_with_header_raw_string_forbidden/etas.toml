@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-with-header-raw-string-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving client with_header requires user-settable header evidence"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-with-header-raw-string-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-with-header-raw-string-forbidden"
+module = "tests.edk.negative.edk_http_with_header_raw_string_forbidden.main"
+flow = "main"

@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-managed-header-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw strings cannot construct user-settable HTTP headers"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-managed-header-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-managed-header-forbidden"
+module = "tests.edk.negative.edk_http_managed_header_forbidden.main"
+flow = "main"

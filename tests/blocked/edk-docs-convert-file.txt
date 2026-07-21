@@ -1,0 +1,22 @@
+`edk-docs.convert_file` is intentionally not implemented in this slice.
+
+Required architecture behavior:
+
+- read input bytes through `EdkWorkspace.read<input>`;
+- convert through `EdkDocs.convert`;
+- write output bytes through `EdkWorkspace.write<output>`;
+- preserve path-scoped effect metadata.
+
+Current blockers:
+
+- byte/text codec primitives are not yet exposed as stable std helpers;
+- package-defined scoped action metadata cannot yet publish input/output path
+  scopes for EDK actions;
+- package-mode verification for the package now works, but effect replay still
+  cannot prove input/output path scopes or conversion artifact identity for the
+  file-level workflow.
+
+Decision:
+
+Keep in-memory conversion action wrappers and pure document helpers. Do not
+publish a fake file conversion flow that drops encoding or path-scope facts.

@@ -1,0 +1,18 @@
+[package]
+name = "spec-impl-compat-equivalence-blocked"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Blocked fixture proving impl Spec for Type should normalize to impl Type ~ Spec for spec-bound dispatch"
+repository = "https://example.invalid/etas-edk-fixtures/spec-impl-compat-equivalence-blocked"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "spec-impl-compat-equivalence-blocked"
+module = "tests.edk.spec_impl_compat_equivalence.main"
+flow = "main"

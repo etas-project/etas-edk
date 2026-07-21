@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-opinionated-api-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving opinionated EDK HTTP JSON/tool shortcuts are not public API"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-opinionated-api-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-opinionated-api-forbidden"
+module = "tests.edk.negative.edk_http_opinionated_api_forbidden.main"
+flow = "main"

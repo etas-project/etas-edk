@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-text-decode-modes"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive std requirements probe for std.codec.text Strict and Replace decode modes"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-text-decode-modes"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-text-decode-modes"
+module = "std_requirements.http.positive.http_text_decode_modes.main"
+flow = "main"

@@ -1,0 +1,19 @@
+[package]
+name = "edk-github-raw-pull-request-spec-not-target"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw PullRequestSpec does not satisfy GitHubPullRequestTarget"
+repository = "https://example.invalid/etas-edk-fixtures/edk-github-raw-pull-request-spec-not-target"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+
+[[bin]]
+name = "edk-github-raw-pull-request-spec-not-target"
+module = "tests.edk.negative.edk_github_raw_pull_request_spec_not_target.main"
+flow = "main"

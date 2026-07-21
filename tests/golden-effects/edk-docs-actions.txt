@@ -1,0 +1,33 @@
+Source-contract baseline for edk-docs.
+
+The `edk-docs` package now locks, checks, and runs its pure package smoke in
+package mode. Runtime replay of the action-backed flows below still requires
+document conversion and workspace/file handlers with visible authority.
+
+Expected action boundary:
+
+flow convert.convert
+  escaping effects: [EdkDocs.convert, Error<DocsError>]
+  requested actions: [EdkDocs.convert]
+  default actions: []
+  support: requires-host[FileIO]
+
+flow convert.markdown_to_html
+  escaping effects: [EdkDocs.convert, Error<DocsError>]
+  requested actions: [EdkDocs.convert]
+  default actions: []
+
+flow convert.html_to_text
+  escaping effects: [EdkDocs.convert, Error<DocsError>]
+  requested actions: [EdkDocs.convert]
+  default actions: []
+
+Pure helpers:
+
+- markdown_parse.parse_single_line is pure.
+- html_sanitize.sanitize is pure and conservatively preserves only plain text;
+  markup or unsafe markers produce an empty sanitized document.
+- doc_model.one_paragraph is pure.
+
+File conversion remains blocked on byte/text codec primitives plus
+path-scoped EdkWorkspace metadata. This is not a default conversion handler.

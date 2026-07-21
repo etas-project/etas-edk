@@ -1,0 +1,19 @@
+[package]
+name = "edk-web"
+version = "0.1.0"
+edition = "2026"
+license = "MIT OR Apache-2.0"
+description = "Official EDK web package skeleton"
+repository = "https://github.com/etas-project/etas-edk"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-web-smoke"
+module = "edk.web.package_smoke"
+flow = "main"

@@ -1,0 +1,19 @@
+[workspace]
+members = [
+  "packages/edk-http",
+  "packages/edk-web",
+  "packages/edk-workspace",
+  "packages/edk-email",
+  "packages/edk-db",
+  "packages/edk-vector",
+  "packages/edk-algorithm",
+  "packages/edk-browser",
+  "packages/edk-git",
+  "packages/edk-github",
+  "packages/edk-pdf",
+  "packages/edk-docs",
+  "packages/edk-eval",
+]
+
+[workspace.dependencies]
+std = { version = "0.1" }

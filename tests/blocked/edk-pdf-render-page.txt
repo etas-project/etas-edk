@@ -1,0 +1,18 @@
+`edk-pdf.render_page` is intentionally not implemented in this slice.
+
+Required architecture behavior:
+
+- render a selected PDF page using policy-visible file reads;
+- preserve page render metadata and output artifact identity;
+- treat rendered output as untrusted until validated.
+
+Current blocker:
+
+The public EDK/std substrate does not yet expose PDF graphics, font, image, or
+render-target primitives. Returning a placeholder image or artifact id would be
+a fallback implementation and would hide unsupported rendering semantics.
+
+Decision:
+
+Keep render option constructors in source, but leave the rendering flow pending
+until an explicit rendering substrate or package binding is available.

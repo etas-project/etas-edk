@@ -1,0 +1,29 @@
+Source-contract baseline for edk-pdf.
+
+The `edk-pdf` package now locks, checks, and runs its pure package smoke in
+package mode. Runtime replay of the action-backed flows below still requires
+workspace/file and PDF handlers with visible authority.
+
+Expected action boundary:
+
+flow extract.extract_text
+  escaping effects: [EdkPdf.read, EdkWorkspace.read, Error<PdfError>]
+  requested actions: [EdkPdf.read]
+  declared lower requirement: [EdkWorkspace.read]
+  default actions: []
+  support: requires-host[FileIO]
+
+flow citation.citations
+  escaping effects: [EdkPdf.read, EdkWorkspace.read, Error<PdfError>]
+  requested actions: [EdkPdf.read]
+  declared lower requirement: [EdkWorkspace.read]
+  default actions: []
+  support: requires-host[FileIO]
+
+Rendering contract:
+
+- render option builders are pure.
+- render_page remains blocked until PDF graphics/font/image substrate exists.
+
+This is not a default PDF parser or renderer. Path-scoped forms such as
+`EdkPdf.read` remain blocked on package-defined action scope metadata.

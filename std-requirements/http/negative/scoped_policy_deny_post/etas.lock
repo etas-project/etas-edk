@@ -1,0 +1,20 @@
+version = 1
+manifest_fingerprint = "etas-lock-input:v1|package=std-req-http-scoped-policy-deny-post|version=0.1.0|edition=2026|dependency:edk_http:import=edk.http,path=../../../../packages/edk-http|dependency:std:version=0.1"
+
+[[package]]
+name = "edk-http"
+version = "0.1.0"
+source = "vendor+.etas/vendor/edk/http"
+checksum = "blake3:06469f595f7789009886034f16cf9fe15a355c917bdcb0d3b78cb8f9c12ec2df"
+dependencies = ["std|std|0.1.0"]
+import_root = "edk.http"
+metadata_fingerprint = "blake3:eb82381f32c051e1a4b29e6e067f86b1bea0a3b357bb7ae5403c5845bc4560a5"
+
+[[package]]
+name = "std"
+version = "0.1.0"
+source = "builtin"
+checksum = "builtin:std"
+dependencies = []
+import_root = "std"
+metadata_fingerprint = "builtin:std"

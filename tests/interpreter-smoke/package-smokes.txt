@@ -1,0 +1,115 @@
+Package-mode interpreter smoke gates.
+
+These commands are the current executable EDK smoke tests. They use package
+source, std, and package-manager materialized local EDK dependencies; they do
+not require default handlers, host network, filesystem, browser, database,
+email, PDF, or evaluation services.
+
+Expected passing gates:
+
+```text
+etas pkg lock packages/edk-algorithm
+etas check --all packages/edk-algorithm
+etas run packages/edk-algorithm
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-http
+etas check --all packages/edk-http
+etas run packages/edk-http
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-workspace
+etas check --all packages/edk-workspace
+etas run packages/edk-workspace
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-db
+etas check --all packages/edk-db
+etas run packages/edk-db
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-vector
+etas check --all packages/edk-vector
+etas run packages/edk-vector
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-web
+etas check --all packages/edk-web
+etas run packages/edk-web
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-git
+etas check --all packages/edk-git
+etas run packages/edk-git
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-github
+etas check --all packages/edk-github
+etas run packages/edk-github
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-browser
+etas check --all packages/edk-browser
+etas run packages/edk-browser
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-email
+etas check --all packages/edk-email
+etas run packages/edk-email
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-pdf
+etas check --all packages/edk-pdf
+etas run packages/edk-pdf
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-docs
+etas check --all packages/edk-docs
+etas run packages/edk-docs
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+```text
+etas pkg lock packages/edk-eval
+etas check --all packages/edk-eval
+etas run packages/edk-eval
+```
+
+Expected run result: `run value: {"kind":"int","value":0}`.
+
+Do not add action-bearing package tools here unless their runtime handlers are
+real Etas implementations over public substrate APIs.

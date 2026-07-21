@@ -1,0 +1,19 @@
+[package]
+name = "edk-workspace-path-raw-string-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw strings cannot be passed as WorkspacePath"
+repository = "https://example.invalid/etas-edk-fixtures/edk-workspace-path-raw-string-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "edk-workspace-path-raw-string-forbidden"
+module = "tests.edk.negative.edk_workspace_path_raw_string_forbidden.main"
+flow = "main"

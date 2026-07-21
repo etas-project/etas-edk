@@ -1,0 +1,19 @@
+[package]
+name = "edk-browser-raw-selector-constructor-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving Selector evidence cannot be externally forged"
+repository = "https://example.invalid/etas-edk-fixtures/edk-browser-raw-selector-constructor-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+
+[[bin]]
+name = "edk-browser-raw-selector-constructor-forbidden"
+module = "tests.edk.negative.edk_browser_raw_selector_constructor_forbidden.main"
+flow = "main"

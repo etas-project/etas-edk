@@ -1,0 +1,18 @@
+[package]
+name = "removed-std-actions-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving removed std actions are not implicit"
+repository = "https://example.invalid/etas-edk-fixtures/removed-std-actions-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "removed-std-actions-negative"
+module = "tests.edk.negative.removed_std_actions.main"
+flow = "main"

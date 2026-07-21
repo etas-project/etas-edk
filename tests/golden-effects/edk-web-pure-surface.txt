@@ -1,0 +1,34 @@
+The `edk_web_pure_surface` fixture covers deterministic web helper modules
+only:
+
+- URL canonicalization that normalizes scheme/host/path, preserves query strings,
+  removes fragments, separates same-origin from same-domain across schemes, and
+  feeds same-origin/domain checks;
+- HTML/media-type detection and text extraction;
+- robots allow/deny decisions with prefix rules, case-insensitive directives,
+  comments, empty rule handling, and more-specific allow/deny precedence;
+- crawl policy, limit, and robots-obedience validation plus empty crawl result
+  constructors;
+- conservative case-insensitive plain-text-only HTML risk detection and
+  empty-output sanitization for markup or active-content markers such as
+  script URLs, event handlers, `srcdoc`, and inline style;
+- fetch option validation and HTTP response-to-untrusted-page conversion over a
+  supplied response;
+- deterministic case-insensitive mock search filtering with query validation,
+  empty-query rejection, conservative provider/language token rejection, and
+  query limit enforcement.
+- deterministic mock fetch/crawl page constructors that preserve `Untrusted`
+  page values without registering a fetch or crawl handler.
+
+Current type-shape note: nested URL fields in `edk.web.types` use
+`edk.http.types.Url` directly, and package-mode `check` verifies cross-module
+record construction with explicit URL ports.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors: none.
+
+This fixture intentionally does not call `edk.web.search.search`,
+`edk.web.fetch.fetch`, `edk.web.crawl.crawl`, or `edk.web.tools.*`, because
+those expose runtime-mediated `EdkWeb.*` actions and require provider/fetch/crawl
+handlers.

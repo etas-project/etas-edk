@@ -1,0 +1,21 @@
+GitHub webhook HMAC verification is blocked in this source slice.
+
+Current implemented surface:
+
+- `edk.github.pure.webhook_verify.verify_signature_header` validates only the
+  `sha256=<digest>` header shape.
+- Empty digests, whitespace, line breaks, and non-`sha256=` prefixes are
+  rejected.
+
+Required implementation before publishing full verification:
+
+- access the configured webhook secret through a policy-visible secret binding;
+- compute HMAC-SHA256 over the raw request body bytes;
+- compare the computed digest with the header in constant-time or equivalent
+  host-provided semantics;
+- expose the secret/crypto/byte authority in package metadata and effect
+  summaries.
+
+Do not treat header-shape validation as cryptographic verification. Do not add
+a fake digest comparison, public string-secret argument, or hidden HTTP/host
+handler to make webhook verification appear complete.

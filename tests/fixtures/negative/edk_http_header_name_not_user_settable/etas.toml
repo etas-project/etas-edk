@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-header-name-not-user-settable"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw HeaderName evidence is not UserSettableHeader capability"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-header-name-not-user-settable"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-header-name-not-user-settable"
+module = "tests.edk.negative.edk_http_header_name_not_user_settable.main"
+flow = "main"

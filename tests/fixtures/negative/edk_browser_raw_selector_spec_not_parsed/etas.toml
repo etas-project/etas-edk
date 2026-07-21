@@ -1,0 +1,19 @@
+[package]
+name = "edk-browser-raw-selector-spec-not-parsed"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw SelectorSpec does not satisfy ParsedSelector"
+repository = "https://example.invalid/etas-edk-fixtures/edk-browser-raw-selector-spec-not-parsed"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+
+[[bin]]
+name = "edk-browser-raw-selector-spec-not-parsed"
+module = "tests.edk.negative.edk_browser_raw_selector_spec_not_parsed.main"
+flow = "main"

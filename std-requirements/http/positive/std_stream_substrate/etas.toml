@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-stream-substrate"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Std requirements probe for HTTP stream substrate"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-stream-substrate"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-stream-substrate"
+module = "std_requirements.http.positive.std_stream_substrate.main"
+flow = "main"

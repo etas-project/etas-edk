@@ -1,0 +1,19 @@
+[package]
+name = "edk-browser-mock-session-not-browser-session"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving mock browser sessions cannot stand in for production BrowserSession evidence"
+repository = "https://example.invalid/etas-edk-fixtures/edk-browser-mock-session-not-browser-session"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+
+[[bin]]
+name = "edk-browser-mock-session-not-browser-session"
+module = "tests.edk.negative.edk_browser_mock_session_not_browser_session.main"
+flow = "main"

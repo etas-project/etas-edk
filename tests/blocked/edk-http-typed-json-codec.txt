@@ -1,0 +1,45 @@
+Typed JSON HTTP helpers are blocked and are not part of the current public
+`edk-http` surface.
+
+Expected source:
+
+A future typed JSON layer may expose helpers such as
+`edk.http.json.post(url: Url, body: JsonValue, options: RequestOptions)`, encode
+the value deterministically into a JSON `RequestBody`, set JSON content-type,
+and follow the same `EdkHttp.request` action boundary as `post`.
+
+Current failure:
+
+`std.json.JsonValue`, `std.json.parse`, and `std.json.stringify` are now
+source-visible to package code. `packages/edk-http/src/edk/http/json_probe.es`
+imports those items with the package-mode shape currently visible to EDK:
+`parse(input) -> Result<JsonValue, JsonError>` and
+`stringify(value) -> Result<string, JsonError>`, without exporting any HTTP
+JSON API.
+
+Typed JSON HTTP helpers remain blocked because EDK has not accepted how
+`JsonError` / `Result` parse-stringify errors should surface in package mode,
+how those errors should map into `Error<HttpError>`, which failures are
+preflight errors versus codec errors, or how package metadata should expose the
+future public `JsonValue` request/response signatures. The checked EDK source
+therefore does not expose `post_json` on either `edk.http` or `edk.http.api`,
+and does not expose `fetch_json` or `submit_json` string convenience wrappers.
+
+Required support:
+
+- accepted `JsonError` to `HttpError` mapping rules for request and response
+  JSON helpers;
+- package-mode metadata alignment for the final `std.json.parse/stringify`
+  error model;
+- deterministic JSON encode/decode helper policy for media type, charset, and
+  malformed input;
+- package metadata for the public `JsonValue` signature;
+- typed codec errors that map into `Error<HttpError>`.
+
+Why private host binding or fallback is forbidden:
+
+Encoding JSON inside a private HTTP host call or accepting arbitrary dynamic
+values would hide codec failures and make `post_json` behavior depend on host
+implementation details instead of checked Etas source. Adding that shortcut to
+`edk.http.api` would be the same architecture violation as adding it to the root
+facade.

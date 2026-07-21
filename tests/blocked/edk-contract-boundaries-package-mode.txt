@@ -1,0 +1,32 @@
+`tests/fixtures/positive/edk_contract_boundaries` is a normal path-dependent
+package fixture. Package lock and package check currently succeed, but package
+runtime execution and imported action-backed source contracts are still
+blocked.
+
+Current blocker:
+
+- `etas pkg lock .` succeeds.
+- `etas check --all .` succeeds.
+- `etas run .` fails because imported dependency flows such as
+  `edk.db.pure.sql_check.classify_query` are not exposed as callable runtime
+  values in package mode.
+- Directly wrapping imported action-backed source such as
+  `edk.github.issue.create_issue` also trips `effect::IncompleteEffectFacts`
+  and `effect::EscapedEffect`.
+- A temporary copied source graph can run the pure boundary logic, but that is
+  only verification evidence and not package-manager compliance.
+
+Required behavior:
+
+- package-mode runtime should call imported dependency flows as runtime values;
+- imported action-backed wrappers should carry checked dependency effect facts;
+- package metadata should preserve public record types, source-level effect
+  rows, and package-owned actions;
+- the GitHub `Secret.read` row must stay visible as source contract metadata
+  without treating the fixture as a real token-reading runtime test.
+
+Rejected workaround:
+
+Do not hand-write dependency effect facts, duplicate dependency source inside
+the fixture, or add fake handlers to make imported package calls pass. Source
+copying is allowed only as a temporary local verification technique.

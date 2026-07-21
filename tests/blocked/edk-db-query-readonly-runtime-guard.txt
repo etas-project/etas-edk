@@ -1,0 +1,43 @@
+`edk-db.query_readonly` is intentionally unpublished until package-defined
+typed errors can be raised from ordinary EDK source.
+
+Required architecture behavior:
+
+- `edk.db.tools.query.query_readonly` must reject mutation, transaction, or
+  unknown SQL before requesting `EdkDb.query`.
+- the rejection must be visible as `Error<DbError>` or a more specific
+  package-defined SQL error.
+- datasource scope must remain visible in the eventual `EdkDb.query`
+  action fact.
+
+Current source status:
+
+- pure SQL classification conservatively identifies readonly, mutation,
+  transaction, and unknown SQL, including mixed statements such as
+  `select ...; delete ...`;
+- pure SQL classification and `edk.db.tools.query.explain_query` conservatively
+  identify readonly, mutation, transaction, and unknown SQL;
+- `tests/fixtures/positive/edk_contract_boundaries` includes a source-level
+  regression for mutation, mixed, transaction, and unknown SQL classification;
+- `query_readonly` is not exported from `edk.db.tools.query`, because the
+  previous direct implementation requested `EdkDb.query` without using the
+  classification guard.
+
+Rejected workaround:
+
+Do not return empty query results, silently downgrade SQL, rewrite SQL, or
+perform an opaque host-side validation. Those would make the tool look safe
+while hiding policy-relevant failure semantics.
+
+Do not re-export `query_readonly` until the rejection can be represented as a
+package-defined typed error and tests prove non-readonly SQL does not request
+`EdkDb.query`.
+
+Required before unblocking:
+
+- std `Error<E>.raise` must work for package-defined EDK error records through
+  package metadata;
+- package-defined action scope metadata must preserve datasource identity for
+  `EdkDb.query`;
+- effect replay must prove rejected non-readonly SQL does not request a host
+  database action.

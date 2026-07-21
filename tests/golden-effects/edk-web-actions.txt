@@ -1,0 +1,36 @@
+Source-contract baseline for edk-web.
+
+The `edk-web` package and pure-surface fixture now pass package-mode `pkg
+update`, `pkg lock`, `check`, and `run`. Runtime replay of the action-backed
+flows below still requires search/fetch/crawl handlers with visible authority.
+
+Expected action boundary:
+
+flow search.search
+  escaping effects: [EdkWeb.search, Error<SearchError>]
+  requested actions: [EdkWeb.search]
+  default actions: []
+  support: requires-host[Network]
+
+flow fetch.fetch
+  escaping effects: [EdkWeb.fetch, Error<FetchError>]
+  requested actions: [EdkWeb.fetch]
+  default actions: []
+  support: requires-host[Network]
+
+flow crawl.crawl
+  escaping effects: [EdkWeb.crawl, Error<WebError>]
+  requested actions: [EdkWeb.crawl]
+  default actions: []
+  support: requires-host[Network]
+
+Trust contract:
+
+- search returns `Array<Untrusted<SearchResult>>`.
+- fetch returns `Untrusted<WebPage>`.
+- trust.sanitize_html conservatively preserves only plain text; markup or
+  unsafe markers produce an empty sanitized value rather than marking unsafe raw
+  external content trusted.
+
+This is not a default HTTP/search/crawl handler. Domain-scoped forms such as
+`EdkWeb.fetch<domain>` remain blocked on package-defined action scope metadata.

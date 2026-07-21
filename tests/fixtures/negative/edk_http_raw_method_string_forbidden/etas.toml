@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-raw-method-string-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw strings cannot be used where HttpMethod evidence is required"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-raw-method-string-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-raw-method-string-forbidden"
+module = "tests.edk.negative.edk_http_raw_method_string_forbidden.main"
+flow = "main"

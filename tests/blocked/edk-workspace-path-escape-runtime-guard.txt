@@ -1,0 +1,39 @@
+Workspace runtime path-escape guard is blocked until package-defined typed
+errors can be raised from ordinary EDK source.
+
+Required architecture behavior:
+
+- `edk.workspace.files.read`, `write`, and `list` must reject paths that escape
+  the workspace root before any host filesystem substrate is used.
+- tools in `edk.workspace.tools.files` must preserve the same guard before they
+  perform `EdkWorkspace.read`, `EdkWorkspace.write`, or `EdkWorkspace.list`.
+- the failure must be visible as `Error<WorkspaceError>` or a more specific
+  package error such as `Error<PathEscapeError>`.
+
+Current source status:
+
+- pure path helpers in `edk.workspace.path` and
+  `edk.workspace.pure.path_normalize` detect escapes and return
+  `PathNormalizeResult`;
+- `tests/fixtures/positive/edk_contract_boundaries` includes source-level
+  coverage for absolute, parent-segment, backslash, drive-style, and
+  control-character path escapes;
+- runtime action wrappers expose the package-owned `EdkWorkspace.*` action
+  boundary, but cannot safely convert a failed normalization into a package
+  typed error yet.
+
+Rejected workaround:
+
+Do not return empty bytes, empty file lists, no-op writes, root-relative
+substitute paths, or hidden host errors for escaped paths. Those would be
+fallback behavior and would hide the authority/failure boundary required by the
+architecture.
+
+Required before unblocking:
+
+- std `Error<E>.raise` must work for package-defined EDK error record types via
+  package metadata;
+- action scope metadata must preserve the normalized path/path-scope used by
+  `EdkWorkspace.read<R>`, `write<R>`, and `list<R>`;
+- package-mode effect replay must prove that invalid paths do not request host
+  filesystem actions.

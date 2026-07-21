@@ -1,0 +1,31 @@
+Fixture: tests/fixtures/positive/edk_email_pure_surface
+
+Status:
+
+- Source fixture parses and exercises deterministic `edk-email` address
+  parsing, draft construction, required-header validation, MIME part/encoding
+  helpers, SMTP/provider endpoint constructors, and mock mailbox
+  page/filter/receipt helpers.
+- Package-mode `pkg update`, `pkg lock`, and `check` now succeed.
+- Package-mode `run` is blocked because imported `tool` aliases do not name
+  runtime values.
+
+Observed blocker:
+
+```text
+error[analysis::InvalidArguments]: import alias does not name a runtime value
+ --> tests/fixtures/positive/edk_email_pure_surface/src/tests/edk/email_pure_surface/main.es:30:22
+  |     let tool_draft = draft_email(account.address, "Report", "ready");
+  |                      ^ import alias does not name a runtime value
+```
+
+Required frontend/package tooling behavior:
+
+- preserve imported `tool` declarations as callable runtime values when they
+  are pure and used by package-mode fixtures, or provide a specified tool-call
+  runtime boundary that can execute them without fake handlers.
+
+Do not replace `draft_email` with a duplicate local helper, inline
+`edk-email` source into the fixture, remove the email package's `edk-http`
+dependency, or add fake package registry metadata to make this fixture pass
+package-mode run.

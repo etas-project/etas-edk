@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-pure-surface"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK HTTP pure surface fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-pure-surface"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-pure-surface"
+module = "tests.edk.http_pure_surface.main"
+flow = "main"

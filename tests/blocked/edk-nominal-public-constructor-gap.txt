@@ -1,0 +1,569 @@
+EDK nominal evidence and spec-evidence source is intentionally written to
+the SPEC target, even where the current frontend cannot check it yet.
+
+Target model:
+
+```etas
+type WorkspaceRoot;
+type ReportsRoot;
+
+spec WorkspaceRegion;
+impl WorkspaceRoot ~ WorkspaceRegion;
+impl ReportsRoot ~ WorkspaceRegion;
+
+type WorkspacePath<R ~ WorkspaceRegion> = {
+    value: string,
+};
+
+spec ReadablePath<R ~ WorkspaceRegion>;
+spec WritablePath<R ~ WorkspaceRegion>;
+spec ListablePath<R ~ WorkspaceRegion>;
+```
+
+EDK package APIs should use checked constructors to produce evidence values and
+spec constraints to consume them. For example, `report_path(value)` validates
+and normalizes a runtime string before returning `WorkspacePath<ReportsRoot>`,
+and write APIs can require `WritablePath<ReportsRoot>`.
+
+Current frontend/package-manager blockers observed while wiring EDK to this
+target:
+
+- generic ordinary flows, source-bodied tools, and effect actions with
+  parameterized spec bounds such as `P ~ WritablePath<ReportsRoot>` are not
+  accepted/solved reliably by the current frontend; observed diagnostics include
+  `syntax::MissingToken: expected parameter list` at `public tool name<T ~
+  SpecEvidence>(...)` and `action name<T ~ SpecEvidence>(...)` declarations;
+- primitive-backed applied nominal accessors are not used for workspace paths;
+  `WorkspacePath<R>` is record-backed and `path_value(path) -> string` reads the
+  validated `value` field. Downstream package metadata still cannot emit the
+  applied nominal `WorkspacePath<WorkspaceRoot>` schema when other packages
+  depend on `edk-workspace`;
+- nominal record wrappers such as `HttpUrl`, `PublicHttpUrl`, `HeaderName`, and
+  `HeaderValue` need explicit constructor/accessor support for package-internal
+  validation, preflight, wire lowering, and mock matching; current checking
+  reports field access and record-constructor mismatches once these are nominal;
+- runtime action payload policy needs a source-level implementation path:
+  `EdkHttp.request` is now written as
+  `action request(request: HttpActionRequest) -> HttpActionResponse`, and
+  method/host must remain payload fields. EDK must not
+  restore runtime method/host values in `<...>` or the old
+  `request(method, host, request)` signature to keep exact policy summaries
+  green. The minimal `custom_action_scope_gap` fixture must reject
+  `perform EdkProbe.request<request.host>(request)`;
+- bodyless or hidden-representation handles need a package-visible trusted
+  construction path for runtime adapters, while remaining unforgeable from
+  production package roots; `edk.browser.types.BrowserSessionRef` is now written
+  as a bodyless nominal handle, production `create_session` / `attach_session`
+  produce it via `EdkBrowser.create` / `EdkBrowser.attach`, and
+  `edk.browser.mocks.mock_session` now produces a separate
+  `MockBrowserSessionRef` through `EdkBrowserMock.session` rather than a
+  production `BrowserSessionRef`;
+- Browser page actions and tool wrappers are now written against spec evidence:
+  `navigate/read` and `open_page/read_page` consume `BrowserSession`;
+  `click` and `click_selector` consume both `BrowserSession` and
+  `ParsedSelector`; and `screenshot_request` is modeled as
+  `ScreenshotRequest<S ~ BrowserSession>`. Current frontend checking cannot yet
+  solve concrete `BrowserSessionRef -> S ~ BrowserSession` or
+  `Selector -> P ~ ParsedSelector` calls reliably, even when the impl appears in
+  the same source graph.
+- Browser selectors no longer use `SelectorParseResult` with an invalid fallback
+  `Selector`; checked constructors now return `Result<Selector, SelectorError>`
+  and failure stays in `Err`.
+- Browser selectors now separate representation from parsed evidence:
+  `SelectorSpec` is the raw shape, `Selector` is checked parsed evidence, and
+  only `Selector` implements `ParsedSelector`.
+- Browser URLs now separate representation from navigation-target evidence:
+  `UrlSpec` is the raw shape, `Url` is checked evidence, and `url(...)` /
+  `https(...)` return `Result<Url, BrowserError>` after validating scheme,
+  host, and path.
+- Email and GitHub package smokes/fixtures no longer manufacture invalid
+  fallback evidence values such as empty `EmailAddress`, `SmtpEndpoint`,
+  `GitHubRepoRef`, `PullRequestRef`, `ReviewComment`, or `GitHubQuery` in
+  `must_*` helpers; checked constructor failure now propagates as typed
+  `Error<...>` in those test surfaces.
+- Email addresses, accounts, provider endpoints, and headers now separate raw
+  representation from evidence: `EmailAddressSpec`, `EmailAccountSpec`,
+  `ProviderEndpointSpec`, and `EmailHeaderSpec<N>` are raw shapes;
+  `EmailAddress`, `EmailAccount`, `ProviderEndpoint`, and
+  `EmailHeader<N ~ UserSettableEmailHeader>` are checked evidence values.
+  `UserEmailHeader` is the production draft/header storage alias, and
+  `EmailHeaderName` / `EmailHeaderValue` are checked evidence values.
+  `parse_header(...)` is the checked string boundary,
+  `header<N ~ UserSettableEmailHeader>(...)` is evidence-only, and managed
+  headers such as `Subject` are rejected instead of being smuggled through a
+  fake `empty_header` fallback. Public value accessors use
+  `email_header_name_value(...)` / `email_header_value_text(...)`; raw helper
+  names are private implementation details.
+- Email drafts are now parameterized by deliverable-address evidence:
+  `EmailDraft<A ~ DeliverableAddress>` carries the recipient evidence type
+  through `to`, `cc`, and `bcc`; `draft`, `draft_to_one`, `with_cc`,
+  `with_bcc`, MIME helpers, receipts, and `send` preserve `A` rather than
+  accepting an unqualified draft surface.
+- Email SMTP endpoints now separate raw endpoint shape from TLS-required
+  evidence: `SmtpEndpoint` is the representation, `TlsSmtpEndpoint` is the
+  checked evidence type, and only `TlsSmtpEndpoint` implements
+  `TlsRequiredEndpoint`.
+- `GitHubTokenRef` is now written as `SecretKey<GitHubToken>` rather than a
+  string wrapper, and token-ref helpers fail closed until source-level
+  `SecretKey<K>` / `SecretValue<K>` construction/import metadata is available;
+  package smoke and the pure surface fixture assert both this fail-closed path
+  and malformed token reference input rejection;
+- `BranchRef` is now a nominal GitHub evidence type produced by
+  `branch_ref(value) -> Result<BranchRef, GitHubError>`; `pull_request(...)`
+  consumes `BranchRef` for `head` and `base` instead of raw strings;
+- `BranchRef` now separates raw representation from evidence:
+  `BranchSpec` is the raw shape, `BranchRef` is checked evidence, and only
+  `BranchRef` implements `GitHubBranchRef`;
+- `PullRequestRef<R, H, B>` now separates raw representation from evidence:
+  `PullRequestSpec<R, H, B>` is the raw shape, `PullRequestRef<R, H, B>` is
+  checked PR evidence, and only checked PR evidence implements the
+  pull-request target spec;
+- `GitHubRepoRef` now separates raw representation from evidence:
+  `GitHubRepoSpec` is the raw shape, `GitHubRepoRef` is checked repository
+  evidence, and only `GitHubRepoRef` implements `GitHubTarget`;
+- `GitHubRestPath` and `ReviewPath` now separate raw representation from
+  evidence: `GitHubRestPathSpec` / `ReviewPathSpec` are raw shapes, while
+  `GitHubRestPath` / `ReviewPath` are checked path evidence produced by
+  constructors; `query(...)`, `RestRequestSpec.path`, and
+  `review_comment(...)` no longer consume raw path strings;
+- `ReviewComment<P>` now separates raw representation from evidence:
+  `ReviewCommentSpec<P>` is the raw shape, and checked `ReviewComment<P>`
+  evidence is produced by `review_comment(...)` after line/body validation;
+- Git repository values now follow the same evidence pattern:
+  `GitRepoSpec`, `BranchSpec`, `RemoteSpec`, and `GitStatusEntrySpec` are raw
+  shapes; `GitRepoRef`, `BranchRef`, `RemoteRef`, and `GitStatusEntry` are
+  checked evidence values produced by `git_repo(...)`, `branch(...)`,
+  `remote(...)`, and `status_entry(...)` returning `Result<...>`; invalid
+  repo paths, branch names, remote URLs, and status paths stay in `Err` instead
+  of manufacturing bad evidence for later validation;
+- the old `empty_rest_path()` public helper has been removed so
+  `GitHubRestPath` evidence is produced through `rest_path(...)` even for the
+  empty PR-query path case;
+- HTTP method and URL constructors now use evidence values: `HttpMethod` is a
+  nominal method evidence type produced by checked `http_method(...)` or fixed
+  constructors such as `get_method()` / `post_method()`, public URL
+  constructors (`https`, `http`, `url_with_port`) return
+  `Result<PublicHttpUrl, HttpError>`, and configured request builders consume
+  `HttpMethod` plus `PublicHttpUrl` instead of raw `string` / `Url`;
+- HTTP no longer exposes the old `edk.http.headers.normalize.header` raw
+  `HeaderName` / `HeaderValue` helper. Request headers now separate raw shape
+  from evidence: `HeaderSpec<N>` is the raw shape, `HeaderEvidence<N>` is the
+  evidence value, and public construction flows through checked
+  `user_header_name(...)`, `header_value(...)`, and `header(...)`;
+- HTTP request headers are modeled as `HeaderEvidence<UserHeaderName>` through
+  the `Header` alias, while response/wire headers use separate `WireHeader` /
+  `ResponseHeaders` evidence. External source must not be able to construct
+  request headers from raw `HeaderSpec`, ordinary `HeaderName` evidence, or
+  managed header names;
+- package metadata still needs to carry these nominal/spec facts, effect
+  summary types, and custom action static families without degrading them to
+  unscoped strings or mismatching `EdkHttp.request` with a different action
+  declaration.
+- `etas pkg lock` for the new email account/provider negative fixtures is
+  currently blocked before intended diagnostics because `edk_email` depends on
+  `edk_http`, and `edk_http` cannot yet produce checked package metadata for
+  its nominal method/URL/header evidence source.
+- `etas pkg lock` for the new HTTP method negative fixtures is currently
+  blocked before intended diagnostics for the same `edk_http` package metadata
+  reason; the fixtures express the target boundary but are not yet verified to
+  the target diagnostic.
+
+EDK-side regression fixtures now express the intended boundary:
+
+- `tests/fixtures/positive/alias_transparent_host` proves transparent `alias`
+  remains usable with raw strings for harmless abbreviations;
+- `tests/fixtures/negative/nominal_type_rejects_raw_string` proves
+  `type UserId = string` is nominal and rejects a raw `string`;
+- `tests/fixtures/positive/edk_workspace_nominal_safety` checks that
+  `report_path("reports/a.md")` can produce a ReportsRoot path for
+  `write_report_path`, and that `report_path("../secret.txt")` fails;
+- `tests/fixtures/negative/edk_workspace_path_raw_string_forbidden` and
+  `tests/fixtures/negative/edk_workspace_root_not_report_path` express the
+  compile-time path capability failures;
+- `tests/fixtures/negative/edk_workspace_raw_report_path_constructor_forbidden`
+  expresses that external source must not forge `WorkspacePath<ReportsRoot>`
+  evidence directly; `report_path(...)` must remain the checked constructor;
+- `tests/fixtures/positive/edk_http_public_url_safety` checks
+  `parse_public_url("https://example.com")` can feed `get_url`, while
+  private/reserved hosts and managed headers are rejected by checked
+  constructors;
+- `tests/fixtures/negative/edk_http_managed_header_forbidden`,
+  `tests/fixtures/negative/edk_http_with_header_raw_string_forbidden`, and
+  `tests/fixtures/negative/edk_http_raw_request_forbidden` express the
+  compile-time HTTP boundary failures, including raw `Url` rejection by request
+  builders.
+- `tests/fixtures/negative/edk_http_header_name_not_user_settable` expresses
+  the type-level capability failure that ordinary `HeaderName` evidence does
+  not satisfy `UserSettableHeader`; only checked `UserHeaderName` evidence is
+  user-settable.
+- `tests/fixtures/negative/edk_http_raw_header_record_forbidden` expresses that
+  external source must not forge request `Header` evidence directly from raw
+  `HeaderSpec<UserHeaderName>`; request headers must flow through
+  checked `user_header_name(...)`, `header_value(...)`, and `header(...)`.
+- `tests/fixtures/negative/edk_http_raw_user_header_name_constructor_forbidden`
+  expresses that external source must not forge `UserHeaderName` evidence and
+  then pass a managed header such as `Host` through public `header(...)`.
+- `tests/fixtures/negative/edk_http_raw_header_value_constructor_forbidden`
+  expresses that external source must not forge `HeaderValue` evidence and then
+  pass CR/LF-injected text through public `header(...)`.
+- `tests/fixtures/negative/edk_http_raw_public_url_constructor_forbidden`
+  expresses that external source must not forge `PublicHttpUrl` evidence with a
+  raw nominal constructor over `Url`; checked `parse_public_url(...)`,
+  `https(...)`, `http(...)`, or `url_with_port(...)` must be the source
+  boundary.
+- `tests/fixtures/negative/edk_http_raw_method_string_forbidden` expresses that
+  raw `string` values must not be accepted where `HttpMethod` evidence is
+  required.
+- `tests/fixtures/negative/edk_http_raw_method_constructor_forbidden` expresses
+  that external source must not forge `HttpMethod` evidence with a raw nominal
+  constructor; checked `http_method(...)` or fixed method constructors must be
+  the source boundary.
+- `tests/fixtures/negative/edk_browser_raw_session_forbidden` expresses that a
+  raw `string` must not be accepted where a `BrowserSessionRef` opaque handle is
+  required.
+- `tests/fixtures/negative/edk_browser_raw_selector_forbidden` expresses that a
+  raw `string` must not be accepted where parsed selector evidence is required.
+- `tests/fixtures/negative/edk_browser_raw_selector_spec_not_parsed` expresses
+  that a raw `SelectorSpec` record must not satisfy `ParsedSelector`.
+- `tests/fixtures/negative/edk_browser_raw_selector_constructor_forbidden`
+  expresses that external source must not forge `Selector` evidence from a raw
+  `SelectorSpec`; checked `parse_selector(...)`, `css(...)`, or `text(...)`
+  must be the source boundary.
+- `tests/fixtures/negative/edk_browser_raw_url_constructor_forbidden` expresses
+  that external source must not forge `Url` evidence from a raw `UrlSpec`;
+  checked `url(...)` / `https(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_browser_mock_session_not_browser_session`
+  expresses that a mock-only browser session handle must not satisfy production
+  `BrowserSession` APIs.
+- `tests/fixtures/negative/edk_email_raw_address_forbidden` expresses that a raw
+  `string` must not be accepted where `EmailAddress` evidence is required.
+- `tests/fixtures/negative/edk_email_raw_address_constructor_forbidden`
+  expresses that external source must not forge `EmailAddress` evidence with a
+  raw `EmailAddressSpec`; checked `parse_address(...)` /
+  `email_address(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_email_raw_account_spec_not_target` expresses
+  that a raw `EmailAccountSpec` record must not satisfy `EmailAccountTarget`.
+- `tests/fixtures/negative/edk_email_raw_account_constructor_forbidden`
+  expresses that external source must not forge `EmailAccount` evidence from
+  raw `EmailAccountSpec`; checked `email_account(...)` must be the source
+  boundary.
+- `tests/fixtures/negative/edk_email_raw_recipient_array_forbidden` expresses
+  that `Array<string>` must not be accepted where `Array<A ~
+  DeliverableAddress>` recipient evidence is required.
+- `tests/fixtures/negative/edk_email_raw_header_forbidden` expresses that raw
+  `string` values must not be accepted where `EmailHeaderName` /
+  `EmailHeaderValue` evidence is required.
+- `tests/fixtures/negative/edk_email_raw_header_constructor_forbidden`
+  expresses that external source must not forge `EmailHeader<...>` evidence
+  from raw `EmailHeaderSpec<...>`; checked `parse_header(...)` /
+  `header(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_email_raw_header_name_constructor_forbidden`
+  expresses that external source must not forge `EmailHeaderName` evidence and
+  then pass managed names such as `subject` through public `header(...)`.
+- `tests/fixtures/negative/edk_email_raw_header_value_constructor_forbidden`
+  expresses that external source must not forge `EmailHeaderValue` evidence and
+  then pass CR/LF-injected text through public `header(...)`.
+- `tests/fixtures/negative/edk_email_raw_smtp_endpoint_not_tls_required`
+  expresses that a raw `SmtpEndpoint` record must not satisfy
+  `TlsRequiredEndpoint`; only checked `TlsSmtpEndpoint` evidence should pass.
+- `tests/fixtures/negative/edk_email_raw_tls_smtp_endpoint_constructor_forbidden`
+  expresses that external source must not forge `TlsSmtpEndpoint` evidence from
+  a raw `SmtpEndpoint`; checked `smtp_endpoint(...)` /
+  `default_submission_endpoint(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_email_raw_provider_endpoint_spec_not_target`
+  expresses that a raw `ProviderEndpointSpec` record must not satisfy
+  `EmailProviderEndpointTarget`.
+- `tests/fixtures/negative/edk_email_raw_provider_endpoint_constructor_forbidden`
+  expresses that external source must not forge `ProviderEndpoint` evidence
+  from raw `ProviderEndpointSpec`; checked `provider_endpoint(...)` must be
+  the source boundary.
+- `tests/fixtures/negative/edk_github_raw_repo_forbidden` expresses that a raw
+  `string` must not be accepted where `GitHubRepoRef` evidence is required.
+- `tests/fixtures/negative/edk_github_raw_repo_constructor_forbidden` expresses
+  that external source must not forge `GitHubRepoRef` evidence from raw
+  `GitHubRepoSpec`; checked `github_repo(...)` /
+  `github_enterprise_repo(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_github_raw_repo_spec_not_target` expresses that
+  a raw `GitHubRepoSpec` record must not satisfy `GitHubTarget`.
+- `tests/fixtures/negative/edk_github_pull_request_raw_branch_forbidden`
+  expresses that raw branch-name `string` values must not be accepted where
+  `BranchRef` evidence is required.
+- `tests/fixtures/negative/edk_github_raw_branch_spec_not_branch_ref`
+  expresses that a raw `BranchSpec` record must not satisfy
+  `GitHubBranchRef`.
+- `tests/fixtures/negative/edk_github_raw_branch_constructor_forbidden`
+  expresses that external source must not forge `BranchRef` evidence from raw
+  `BranchSpec`; checked `branch_ref(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_github_raw_pull_request_spec_not_target`
+  expresses that a raw `PullRequestSpec<...>` record must not satisfy
+  `GitHubPullRequestTarget<...>`.
+- `tests/fixtures/negative/edk_github_raw_pull_request_constructor_forbidden`
+  expresses that external source must not forge `PullRequestRef<...>` evidence
+  from raw `PullRequestSpec<...>`; checked `pull_request(...)` must be the
+  source boundary.
+- `tests/fixtures/negative/edk_github_raw_rest_path_forbidden` expresses that a
+  raw path `string` must not be accepted where `GitHubRestPath` evidence is
+  required.
+- `tests/fixtures/negative/edk_github_raw_rest_path_spec_not_route` expresses
+  that a raw `GitHubRestPathSpec` record must not satisfy `GitHubRestRoute`.
+- `tests/fixtures/negative/edk_github_raw_rest_path_constructor_forbidden`
+  expresses that external source must not forge `GitHubRestPath` evidence from
+  raw `GitHubRestPathSpec`; checked `rest_path(...)` must be the source
+  boundary.
+- `tests/fixtures/negative/edk_github_raw_review_path_spec_not_review_path`
+  expresses that a raw `ReviewPathSpec` record must not satisfy
+  `GitHubReviewPath`.
+- `tests/fixtures/negative/edk_github_raw_review_path_constructor_forbidden`
+  expresses that external source must not forge `ReviewPath` evidence from raw
+  `ReviewPathSpec`; checked `review_path(...)` must be the source boundary.
+- `tests/fixtures/negative/edk_github_raw_review_comment_constructor_forbidden`
+  expresses that external source must not forge `ReviewComment<...>` evidence
+  from raw `ReviewCommentSpec<...>`; checked `review_comment(...)` must be the
+  source boundary.
+
+Verification snapshot:
+
+- `etas check tests/fixtures/positive/alias_transparent_host` passes;
+- `etas check tests/fixtures/negative/nominal_type_rejects_raw_string` fails
+  with `type::TypeMismatch` at the raw string call, as intended;
+- `etas check --no-config /private/tmp/etas-bodyless-session-check/main.es`
+  fails with `type::TypeMismatch` when a raw string is passed to a local
+  `type BrowserSessionRef;`, proving the bodyless handle rule itself rejects
+  raw-string evidence;
+- `etas check --no-config /private/tmp/etas-secret-key-check/main.es`
+  passes for a local `GitHubTokenRef = SecretKey<GitHubToken>` alias, spec
+  impl, and fail-closed `token_ref` result constructor, proving the EDK-side
+  token-ref shape no longer requires a string wrapper;
+- adding `std.secret.read(key) -> SecretValue<GitHubToken>` to that temporary
+  probe still fails with a `TypeMismatch`, so the remaining secret gap is the
+  std/runtime generic secret read substrate, not EDK token-ref string fallback;
+- `etas check --no-config /private/tmp/etas-branch-ref-check/main.es`
+  passes for a local `BranchRef` checked constructor feeding
+  `pull_request(repo, number, head, base)`;
+- `etas check --no-config /private/tmp/etas-branch-ref-check/raw_string_forbidden.es`
+  fails with `type::TypeMismatch` at both raw branch string arguments, proving
+  the desired `string`-to-`BranchRef` rejection independently of package
+  metadata;
+- `etas check --no-config /private/tmp/etas-github-rest-path-check/main.es`
+  passes for a local `GitHubRestPath` checked constructor feeding a query and
+  REST request spec;
+- `etas check --no-config /private/tmp/etas-github-rest-path-check/raw_string_forbidden.es`
+  fails with `type::TypeMismatch` at the raw path argument, proving the desired
+  `string`-to-`GitHubRestPath` rejection independently of package metadata;
+- `etas check --no-config packages/edk-github/src` is now intentionally ahead
+  of the current frontend. `IssueRef<R>`, `PullRequestRef<R, H, B>`,
+  `GitHubQuery<P>`, `ReviewComment<P>`, `GitHubResult<R>`, and
+  `RestRequestSpec<P>` preserve evidence type arguments, and GitHub actions are
+  written with generic type parameters. Current diagnostics include parser
+  failures for generic effect action declarations, parser failures for applied
+  nominal record constructors such as `PullRequestRef<R, H, B> { ... }` and
+  `RestRequestSpec<GitHubRestPath> { ... }`, plus missing field/type facts for
+  parameterized record access, representation-backed `GitHubRepoRef` /
+  `BranchRef` constructor/accessor facts (`GitHubRepoRef(spec)`,
+  `github_repo_value(repo)`, `BranchRef(spec)`, and
+  `branch_ref_value(branch)`), and spec-bound dispatch. The package still
+  keeps `GitHubRepoSpec` separated from checked `GitHubRepoRef`,
+  `BranchSpec` separated from checked `BranchRef`, `GitHubRestPathSpec`
+  separated from checked `GitHubRestPath`, `ReviewPathSpec` separated from
+  checked `ReviewPath`, `PullRequestSpec<R, H, B>` separated from checked
+  `PullRequestRef<R, H, B>`, `ReviewCommentSpec<P>` separated from checked
+  `ReviewComment<P>`,
+  `GitHubTokenRef = SecretKey<GitHubToken>`, fail-closed token-ref helpers, and
+  no public `empty_rest_path()` fallback constructor;
+- `etas check --no-config /private/tmp/etas-http-public-url-check/main.es`
+  passes for checked `PublicHttpUrl` evidence feeding a request builder;
+- `etas check --no-config /private/tmp/etas-http-public-url-check/raw_url_forbidden.es`
+  fails with `type::TypeMismatch` when a raw `HttpUrl` is passed to a request
+  builder expecting `PublicHttpUrl`;
+- `etas check --no-config /private/tmp/etas-email-header-check/minimal_positive.es`
+  passes for local checked `EmailHeaderName` / `EmailHeaderValue` evidence
+  feeding an evidence-only `header(...)` constructor;
+- `etas check --no-config /private/tmp/etas-email-header-check/minimal_raw_string_forbidden.es`
+  fails with `type::TypeMismatch` at both raw header string arguments, proving
+  the desired `string`-to-email-header-evidence rejection independently of
+  package metadata;
+- `etas check --no-config /private/tmp/etas-browser-selector-check/minimal_checked_selector_positive.es`
+  passes for checked `Selector` construction feeding a concrete selector
+  consumer without manufacturing an invalid fallback selector;
+- `etas check --no-config /private/tmp/etas-browser-selector-check/minimal_raw_selector_forbidden.es`
+  fails with `type::TypeMismatch` when a raw `string` is passed where
+  `P ~ ParsedSelector` is required;
+- `etas check --no-config /private/tmp/etas-browser-selector-check/minimal_positive.es`
+  currently fails with `type::TypeMismatch` when concrete `BrowserSessionRef`
+  and `Selector` values are passed to `S ~ BrowserSession` /
+  `P ~ ParsedSelector`, proving the remaining gap is generic spec-bound solving
+  rather than EDK using raw strings;
+- `etas check --all packages/edk-browser` now passes after browser URL/selector
+  constructors and accessors were made explicit nominal record operations,
+  `ScreenshotRequest<S>` construction was made explicit, and browser public rows
+  use the action family without static runtime-value selectors. `etas run
+  packages/edk-browser` still fails closed with `analysis::MissingHostHandler`
+  for `Network`; that is a browser/Network host service gap, not an EDK source
+  fallback target;
+- Browser negative fixture package-lock checks should be rerun against the
+  refreshed `edk-browser` metadata; they are no longer blocked by `edk_http`
+  nominal URL/request metadata.
+- `etas check --all packages/edk-email` and `etas run packages/edk-email` now
+  pass after address/account/provider/header/SMTP evidence constructors and
+  accessors were made explicit nominal record operations;
+- Email negative fixture package-lock checks should be rerun against the
+  refreshed `edk-email` metadata; they are no longer blocked by `edk_http`
+  nominal URL/request metadata.
+- `etas check --all packages/edk-workspace` and `etas run packages/edk-workspace`
+  now pass with record-backed nominal path evidence and explicit
+  `path_value(...)` access. Packages that depend on `edk-workspace` can still be
+  blocked during dependency metadata materialization because the package metadata
+  schema cannot emit `WorkspacePath<WorkspaceRoot>`;
+- `etas pkg lock tests/fixtures/negative/edk_workspace_raw_report_path_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because the `edk_workspace` dependency cannot produce package metadata
+  from the parameterized workspace evidence source;
+- `etas check --all packages/edk-http` and `etas run packages/edk-http` now pass
+  with nominal method, URL, and header evidence. The HTTP client
+  `with_header` API is evidence-only, string input moved to
+  `with_checked_header(...) -> Result<...>`, request headers carry
+  `UserHeaderName` evidence, response headers are separate wire evidence, and
+  request builders require `PublicHttpUrl` evidence. EDK must not weaken these
+  to aliases; payload-aware policy/replay metadata remains blocked;
+- HTTP header negative fixture package-lock checks should be rerun against the
+  refreshed `edk-http` metadata. They are no longer blocked by `edk_http`
+  package metadata generation; parser diagnostics around applied
+  `HeaderSpec<...>` records, if still present, belong to the frontend.
+- HTTP header/public URL negative fixture package-lock checks should be rerun
+  against the refreshed `edk-http` metadata; they are no longer blocked by
+  `edk_http` package metadata generation.
+- `etas pkg lock tests/fixtures/negative/edk_http_raw_request_forbidden`
+  should be rerun against the refreshed `edk-http` metadata; it is no longer
+  blocked by `edk_http` package metadata generation.
+- `etas pkg update packages/edk-browser` now generates lock and package index.
+- `etas check --all packages/edk-browser` passes; `etas run
+  packages/edk-browser` remains blocked by missing browser/Network host
+  service for production `BrowserSessionRef` creation.
+- `etas pkg update packages/edk-email` now generates lock/package index, and
+  package-mode check/run pass for the current source surface.
+- `etas check --all packages/edk-github` is currently blocked by frontend
+  parser/lowering support for generic effect actions and source-bodied generic
+  tools, applied nominal record constructors, representation-backed
+  `GitHubRepoRef` / `BranchRef` /
+  `GitHubRestPath` / `ReviewPath` / `PullRequestRef<R, H, B>` /
+  `ReviewComment<P>`
+  constructor/accessor facts, parameterized record field access, and
+  spec-bound dispatch for `GitHubTarget`, `GitHubBranchRef`,
+  `GitHubRestRoute`, `GitHubReviewPath`, and `GitHubPullRequestTarget<R>`.
+- `etas check --no-config packages/edk-git/src` is currently blocked by
+  representation-backed nominal constructor/accessor facts for
+  `GitRepoRef(GitRepoSpec)`, `BranchRef(BranchSpec)`,
+  `RemoteRef(RemoteSpec)`, and `GitStatusEntry(GitStatusEntrySpec)`. The same
+  check also shows `CommitReceipt = GitWriteReceipt` is not yet preserved as a
+  transparent action-return alias when `EdkGit.write` returns
+  `GitWriteReceipt`.
+- `etas pkg lock packages/edk-github` currently fails through the
+  `edk_git`/`edk_workspace` dependency path before GitHub package metadata can
+  be produced; token refs, branch refs, REST path refs, issue/PR refs, review
+  comments, result records, and request specs are intentionally not downgraded
+  to raw strings or unparameterized records to make that path pass.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_repo_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked `edk_github -> edk_git -> edk_workspace` metadata path;
+  the frontend reports `Syntax(MissingToken)` on the workspace parameterized
+  action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_repo_spec_not_target`
+  currently fails before reaching the intended raw-`GitHubRepoSpec`-to-
+  `GitHubTarget` error because `edk_github` package metadata cannot currently
+  be produced through the blocked `edk_github -> edk_git -> edk_workspace`
+  metadata path; the frontend reports `Syntax(MissingToken)` on the workspace
+  parameterized action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_branch_spec_not_branch_ref`
+  currently fails before reaching the intended raw-`BranchSpec`-to-
+  `GitHubBranchRef` error because `edk_github` package metadata cannot
+  currently be produced through the blocked nominal dependency path.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_branch_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked nominal dependency path.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_pull_request_spec_not_target`
+  currently fails before reaching the intended raw-`PullRequestSpec`-to-
+  `GitHubPullRequestTarget` error because `edk_github` package metadata cannot
+  currently be produced through the blocked `edk_github -> edk_git ->
+  edk_workspace` metadata path; the frontend reports `Syntax(MissingToken)` on
+  the workspace parameterized action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_pull_request_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked `edk_github -> edk_git -> edk_workspace` metadata path;
+  the frontend reports `Syntax(MissingToken)` on the workspace parameterized
+  action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_rest_path_spec_not_route`
+  currently fails before reaching the intended raw-`GitHubRestPathSpec`-to-
+  `GitHubRestRoute` error because `edk_github` package metadata cannot
+  currently be produced through the blocked `edk_github -> edk_git ->
+  edk_workspace` metadata path; the frontend reports `Syntax(MissingToken)` on
+  the workspace parameterized action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_rest_path_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked `edk_github -> edk_git -> edk_workspace` metadata path;
+  the frontend reports `Syntax(MissingToken)` on the workspace parameterized
+  action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_review_path_spec_not_review_path`
+  currently fails before reaching the intended raw-`ReviewPathSpec`-to-
+  `GitHubReviewPath` error because `edk_github` package metadata cannot
+  currently be produced through the blocked `edk_github -> edk_git ->
+  edk_workspace` metadata path; the frontend reports `Syntax(MissingToken)` on
+  the workspace parameterized action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_review_path_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked `edk_github -> edk_git -> edk_workspace` metadata path;
+  the frontend reports `Syntax(MissingToken)` on the workspace parameterized
+  action shape before this fixture can be checked.
+- `etas pkg lock tests/fixtures/negative/edk_github_raw_review_comment_constructor_forbidden`
+  currently fails before reaching the intended external-constructor-visibility
+  error because `edk_github` package metadata cannot currently be produced
+  through the blocked `edk_github -> edk_git -> edk_workspace` metadata path;
+  the frontend reports `Syntax(MissingToken)` on the workspace parameterized
+  action shape before this fixture can be checked.
+
+Required compiler/package work:
+
+- parse, lower, and solve parameterized user-defined spec bounds on ordinary
+  flows, tools, and effect action declarations;
+- parse and lower generic effect action declarations, including action-local
+  type parameters such as
+  `action pr_comment<repo, R ~ GitHubTarget, P ~ GitHubPullRequestTarget<R>, C ~ GitHubReviewPath>(...)`;
+- parse and type-check applied nominal record constructors such as
+  `WorkspacePath<ReportsRoot> { value = value }`, `PullRequestRef<R, H, B> { ... }`,
+  `GitHubQuery<P> { ... }`, and `RestRequestSpec<GitHubRestPath> { ... }`;
+- support source-bodied tool type parameters or an equivalent package metadata
+  representation for model-callable wrappers over spec-constrained flow APIs;
+- support explicit construction/destruction APIs for representation-backed
+  nominal types, including applied nominal types;
+- support construction/access and package metadata for parameterized record
+  evidence such as `EmailHeader<N ~ UserSettableEmailHeader>` and
+  `EmailDraft<A ~ DeliverableAddress>`, plus HTTP request/response header
+  raw/evidence pairs such as `HeaderSpec<UserHeaderName>` /
+  `HeaderEvidence<UserHeaderName>` and `HeaderSpec<WireHeaderName>` /
+  `HeaderEvidence<WireHeaderName>`;
+- preserve checked constructor/accessor facts across module and package
+  imports, so checked EDK constructors can live outside the type declaration
+  module without reopening raw public construction;
+- enforce module/package visibility for nominal record constructors so external
+  packages cannot forge safety evidence such as `EmailAddress` or
+  `GitHubRepoRef` by writing raw record literals;
+- support package/module visibility for trusted constructors, or an equivalent
+  opaque/bodyless handle materialization path for mocks and runtime adapters;
+- expose the secret substrate as source-checkable parameterized evidence
+  (`SecretKey<K>`, `SecretValue<K>`) so EDK token references do not remain
+  string-backed nominal placeholders;
+- reject external construction of EDK safety evidence types such as
+  `WorkspacePath`, `EmailAddress`, `PublicHttpUrl`, `BrowserSessionRef`,
+  `Selector`, `GitHubRepoRef`, `BranchRef`, `GitHubRestPath`, `ReviewPath`,
+  `PullRequestRef`, HTTP `UserHeaderName` / `HeaderValue`, and token refs
+  unless the constructor is explicitly
+  exported as a checked API;
+- emit and consume package metadata for nominal evidence types, spec impls,
+  parameterized effect/action arguments, and custom package action scopes.
+
+This blocker must not be resolved by adding implicit coercions, public raw
+constructors, fake default handlers, or unchecked overloads.

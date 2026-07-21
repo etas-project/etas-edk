@@ -1,0 +1,33 @@
+The `edk_email_pure_surface` fixture covers deterministic email helper modules
+only:
+
+- valid and invalid address parsing, including CR/LF/tab rejection, missing
+  domain-dot rejection, empty local/domain dot-segment rejection, unsafe
+  mailbox separators, and unsafe domain label rejection;
+- account constructors and account token validation;
+- pure `draft_email` tool coverage;
+- idempotency-key validation and HTML-body draft helpers, including separator
+  rejection for ordinary data tokens;
+- RFC5322-style required-header and safe header-name/value/subject checks,
+  including obvious field-name and display-name injection separators;
+- MIME text/html part and encode result helpers;
+- SMTP/provider endpoint constructors and conservative endpoint host validation;
+- mailbox query validation for unsafe mailbox names, over-limit reads, and
+  newline-injected searches;
+- deterministic mock mailbox page/filter/receipt constructors, including stable
+  empty pages for invalid mock queries.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors: none.
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently return
+successfully for this fixture. Package-mode `run` remains blocked because
+imported `tool` aliases are not exposed as runtime values.
+
+This fixture intentionally does not call `edk.email.provider.send`,
+`edk.email.provider.read`, or `edk.email.tools.mail.send_email/search_mailbox`,
+because those expose runtime-mediated `EdkEmail.*` actions and require
+provider/SMTP/mailbox handlers. The pure `draft_email` tool is covered at check
+time, but it is not executable through package-mode fixture imports until tool
+aliases have runtime values.

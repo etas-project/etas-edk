@@ -1,0 +1,106 @@
+Higher-order EDK APIs that accept callbacks are a hard publication blocker
+until Etas can express callback latent effects in source, HIR, package
+metadata, and effect summaries. This is not an implementation task that can be
+closed by publishing narrower helper flows or package-private host actions.
+
+Owner boundary:
+
+This is an Etas language/frontend/package-metadata capability gap, not a EDK
+package implementation gap. EDK source may document the missing API families and
+ship independently useful non-callback helpers, but EDK must not invent a local
+calling convention, fake host callback action, or metadata side channel to make
+the architecture look implemented.
+
+Observed frontend limitation:
+
+The current Etas surface can type ordinary flows and direct effect rows, but it
+does not provide a publishable contract for a callback value whose latent effect
+row escapes through the enclosing flow. In practical terms, EDK cannot currently
+write package metadata that says "this algorithm invokes `neighbors`,
+`heuristic`, `compare`, `score`, `visitor`, or `body`, and the enclosing public
+flow carries the callback's effects in addition to its own effects." The
+limitation must remain visible as a blocked frontend/package-metadata item
+rather than being hidden behind a pure helper, default handler, host callback
+action, or fixture-only shim.
+
+Blocked API families:
+
+- `edk-algorithm`: callback-based traversal, scoring, ranking, matching,
+  sorting, and graph search APIs such as `a_star`, `rank`, and
+  `stable_sort_by`.
+- `edk-db`: `transaction(ds, body)`, where the transaction helper must expose
+  the callback body's latent effects plus database error effects.
+
+Rejected workarounds:
+
+- treating callbacks as pure;
+- erasing callback effects from public metadata;
+- hiding callback execution inside opaque host actions;
+- publishing begin/commit/rollback wrapper flows as a transaction substitute;
+- publishing narrower concrete flows as replacements for the higher-order API
+  names required by the architecture.
+- adding a "safe default", compatibility shim, or fixture-only implementation
+  of the blocked API names just to keep package or cross-package tests green.
+
+Publication guard:
+
+Until callback effect rows are supported, the package source must not publish
+the architecture's higher-order API names with downgraded semantics:
+
+- `edk.algorithm.search.a_star`;
+- `edk.algorithm.ranking.rank`;
+- `edk.algorithm.sort.stable_sort_by`;
+- `edk.db.transaction.transaction(ds, body)`.
+
+Concrete helpers such as integer-only sorting/ranking, edge-list matching, and
+transaction option builders may exist only when they are independently useful
+APIs and are not documented, exported, tested, or counted as substitutes for
+those blocked higher-order contracts.
+
+Verification rule:
+
+Audits must fail if package source or positive fixtures publish the blocked API
+names, wrap callback execution in opaque host actions, or describe narrower
+helpers as compatibility fallbacks for those APIs. A valid slice may mention
+the blocked names only in blocker/status documentation and golden-effect notes
+that explain why the APIs remain pending.
+
+Negative tests should exercise the boundary as documentation until the language
+feature lands: keep the blocked API names out of package source, keep their
+missing latent-effect contract recorded here, and update this file instead of
+adding fallback code whenever another callback-shaped architecture API is found.
+`tests/fixtures/positive/edk_contract_boundaries` intentionally does not try to
+model this requirement, because the current language cannot publish callback
+latent effect rows. The audit below remains the fixture-level guard.
+
+When new evidence appears, update this blocker/status record or add a negative
+diagnostic fixture. Do not paper over the missing language capability with EDK
+source changes.
+
+Exit criteria:
+
+- source syntax can represent callback parameter types with latent effect rows;
+- HIR preserves those callback effect rows instead of erasing or flattening
+  them;
+- package metadata exports the callback parameter/result/effect contract;
+- effect summaries include callback latent effects in the enclosing public flow;
+- package-mode lock/check/effects tests prove the blocked API names preserve
+  the callback effects without EDK-private stubs or host callback shortcuts.
+
+Source audit:
+
+The implementation slice must continue to return no matches for:
+
+`rg -n "public flow (a_star|rank|stable_sort_by|transaction)\\b" -g '*.es' packages tests/fixtures`
+
+If this starts matching package source or a positive fixture, the new API must
+either carry callback latent effects in public metadata or be removed before the
+slice is accepted.
+
+Decision:
+
+Leave these API families pending. Implement only independently valid pure
+helpers or lower-level action boundaries, and do not describe them as fallback
+implementations of the blocked higher-order APIs. Any future claim that one of
+the blocked names is implemented must include evidence that callback latent
+effects are preserved in public package metadata and effect summaries.

@@ -1,0 +1,18 @@
+[package]
+name = "removed-std-vocabulary-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving removed std external capability vocabulary is not implicit"
+repository = "https://example.invalid/etas-edk-fixtures/removed-std-vocabulary-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "removed-std-vocabulary-negative"
+module = "tests.edk.negative.removed_std_vocabulary.main"
+flow = "main"

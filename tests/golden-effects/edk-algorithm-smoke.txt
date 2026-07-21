@@ -1,0 +1,41 @@
+edk-algorithm public reference algorithms are pure except checked error rows
+introduced by bounds-checked array access and explicit algorithmic errors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors:
+- Error<IndexError>
+
+Covered deterministic graph behavior:
+- `toposort` uses the smallest available node as the tie-break when multiple
+  zero-indegree nodes are available;
+- cycle inputs return `acyclic=false` instead of pretending to produce a full
+  order.
+- `scc` returns strongly connected components in deterministic smallest-node
+  order, keeps nodes inside each component in ascending order, and returns no
+  components for invalid directed graphs until EDK-owned typed error raising is
+  available.
+- `schedule_dependencies` uses the declared task IDs, not array positions, and
+  rejects cycles, duplicate task IDs, and dependencies that mention missing
+  tasks through `feasible=false`.
+- concrete edge-list matching sorts candidate edges by `(left, right)`, uses
+  augmenting rematches when an input-order greedy choice would be non-maximum,
+  and emits output pairs sorted by left ID.
+- `diff_i32` computes a minimal edit distance and reconstructs a deterministic
+  script with delete, then insert, then replace as the equal-cost tie-break
+  order.
+
+Current limitation:
+- Custom typed Error<T>.raise for EDK-owned error types is tracked as a
+  frontend/std gap. The initial reference implementation returns explicit
+  status fields for algorithmic failures instead of declaring fake handled
+  errors. `shortest_path` distinguishes `ok`, `no_path`, `invalid_graph`, and
+  `invalid_weight` so invalid weighted inputs are not collapsed into ordinary
+  no-path results.
+  `breadth_first_distance` distinguishes `ok`, `no_path`, `invalid_graph`,
+  `invalid_limit`, and `limit_exceeded` so explicit search limits are
+  observable without hidden runtime authority.
+- Higher-order callback APIs such as `a_star`, `rank`, `stable_sort_by`, and
+  `transaction(ds, body)` remain blocked in `tests/blocked/` until callback
+  latent effects can be represented. The concrete pure helpers covered here are
+  not fallback implementations of those contracts.

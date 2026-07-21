@@ -1,0 +1,18 @@
+[package]
+name = "std-web-unresolved-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving old std Web vocabulary is not implicit"
+repository = "https://example.invalid/etas-edk-fixtures/std-web-unresolved-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-web-unresolved-negative"
+module = "tests.edk.negative.std_web_unresolved.main"
+flow = "main"

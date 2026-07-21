@@ -1,0 +1,19 @@
+[package]
+name = "edk-algorithm-smoke"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK algorithm package smoke fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-algorithm-smoke"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_algorithm = { path = "../../../../packages/edk-algorithm", import = "edk.algorithm" }
+
+[[bin]]
+name = "edk-algorithm-smoke"
+module = "tests.edk.algorithm_smoke.main"
+flow = "main"

@@ -1,0 +1,39 @@
+EDK contract-boundary fixture.
+
+Fixture:
+
+tests/fixtures/positive/edk_contract_boundaries
+
+Purpose:
+
+- DB readonly boundary: mutation, mixed, transaction, and unknown SQL must be
+  classified as not safe for a readonly query before any `EdkDb.query`
+  wrapper can be published.
+- Workspace path boundary: absolute, parent-segment, backslash, drive-style,
+  and control-character paths must be recognized as escapes by pure helpers.
+- HTTP method boundary: supported methods normalize successfully, and `TRACE`
+  stays unsupported before `EdkHttp.request` can be treated as executable.
+- GitHub secret boundary: the fixture validates non-secret GitHub data shapes
+  only. The visible `Secret.read` source contract remains covered by
+  `tests/golden-effects/edk-github-actions.txt` and
+  `tests/blocked/edk-github-secret-read.txt`.
+
+This is not runtime acceptance for action-backed wrappers. It is a source
+contract boundary fixture plus pure guard coverage. Runtime rejection before
+performing `EdkDb.query`, `EdkWorkspace.*`, or `EdkHttp.request` remains blocked
+until package-defined typed errors and custom action scope metadata are
+available.
+
+Current verification:
+
+- `etas pkg lock .` and `etas check --all .` succeed in the fixture package;
+- `etas effects src/tests/edk/contract_boundaries/main.es` reports only local,
+  deterministic effects;
+- package-mode `etas run .` is blocked by dependency import runtime values;
+- a temporary source-copy graph can run the pure logic and return `0`.
+
+The GitHub action-backed `Secret.read` row and higher-order callback latent
+effects are intentionally not executed here. They are tracked by
+`tests/blocked/edk-github-secret-read.txt` and
+`tests/blocked/callback-latent-effects.txt` until Etas can publish the required
+effect facts without EDK fallback code.

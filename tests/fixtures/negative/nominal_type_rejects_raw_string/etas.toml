@@ -1,0 +1,18 @@
+[package]
+name = "nominal-type-rejects-raw-string-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving type UserId = string is nominal, not a transparent alias"
+repository = "https://example.invalid/etas-edk-fixtures/nominal-type-rejects-raw-string-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "nominal-type-rejects-raw-string-negative"
+module = "tests.edk.negative.nominal_type_rejects_raw_string.main"
+flow = "main"

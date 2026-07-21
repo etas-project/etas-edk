@@ -1,0 +1,19 @@
+[package]
+name = "edk-workspace-nominal-safety"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive fixture proving checked report paths can satisfy ReportsRoot write constraints"
+repository = "https://example.invalid/etas-edk-fixtures/edk-workspace-nominal-safety"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "edk-workspace-nominal-safety"
+module = "tests.edk.workspace_nominal_safety.main"
+flow = "main"

@@ -1,0 +1,111 @@
+Expected source-level action coverage for
+`tests/fixtures/positive/edk_tool_mock_surface`.
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently succeed. Runtime
+execution is still blocked because imported pure `tool` aliases are not exposed
+as callable runtime values; this file records the intended action surface
+without treating mocks as handlers.
+
+Scenario: `tool-http-db`
+
+- HTTP pure checks cover supported schemes, header-name validation, method
+  normalization, default timeout, and redirect policy construction.
+- `edk.http.mocks.server.text_response`
+  expected actions: []
+- `edk.db.tools.query.explain_query`
+  expected actions: []
+- DB pure checks cover readonly and mutation SQL classification.
+- `edk.db.mocks.in_memory.empty_query_result`
+  expected actions: []
+
+Scenario: `tool-browser-git`
+
+- `edk.browser.tools.page.open_page`
+  expected actions: [EdkBrowser.navigate]
+- `edk.browser.tools.page.click_selector`
+  expected actions: [EdkBrowser.click]
+- `edk.browser.tools.page.read_page`
+  expected actions: [EdkBrowser.read]
+- Browser pure checks cover session origin normalization, selector parsing,
+  valid CSS selectors, and deterministic snapshot node counting.
+- `edk.git.tools.repo.repo_status`
+  expected actions: [EdkGit.read]
+- `edk.git.tools.repo.show_diff`
+  expected actions: [EdkGit.read]
+- `edk.git.tools.repo.apply_patch`
+  expected actions: [EdkGit.write]
+- Git pure checks cover repository reference validation and patch validation.
+- `edk.git.mocks.repo.clean_read_result`
+  expected actions: []
+
+Scenario: `tool-vector-workspace`
+
+- `edk.vector.tools.retrieve.retrieve_context`
+  expected actions: [EdkEmbedding.embed, EdkVector.search]
+- `edk.vector.tools.retrieve.search_vectors`
+  expected actions: [EdkVector.search]
+- `edk.vector.tools.retrieve.upsert_document_chunks`
+  expected actions: [EdkVector.write]
+- Vector pure checks cover valid filters, value-only filter rejection,
+  metadata matching, wildcard query construction, and store/model references.
+- `edk.workspace.tools.files.list_files`
+  expected actions: [EdkWorkspace.list]
+- Workspace pure checks cover path escape rejection and path-scope matching.
+- `edk.workspace.mocks.filesystem.directory_entry`
+  expected actions: []
+
+Scenario: `tool-email-github`
+
+- `edk.email.tools.mail.send_email`
+  expected actions: [EdkEmail.send]
+- `edk.email.tools.mail.search_mailbox`
+  expected actions: [EdkEmail.read]
+- Email pure/mock checks cover address parsing, draft idempotency data,
+  accepted receipt construction, and empty mailbox pages.
+- `edk.github.tools.issues.create_issue`
+  expected actions: [EdkGitHub.issue_create, Secret.read]
+- `edk.github.tools.prs.comment_on_pr`
+  expected actions: [EdkGitHub.pr_comment, Secret.read]
+- `edk.github.tools.prs.read_pr`
+  expected actions: [EdkGitHub.read, Secret.read]
+- GitHub pure/mock checks cover repo validation, issue draft labels, pull
+  request refs, and deterministic REST result constructors.
+
+Scenario: `tool-docs-pdf-eval`
+
+- `edk.docs.tools.convert.convert_document`
+  expected actions: [EdkDocs.convert]
+- `edk.docs.tools.convert.extract_markdown_summary`
+  expected actions: []
+- `edk.docs.tools.convert.sanitize_html`
+  expected actions: []
+- Docs pure/mock checks cover format construction, sample document IO shapes,
+  markdown summary parsing, and plain-text sanitization.
+- `edk.pdf.tools.pdf.extract_pdf_text`
+  expected actions: [EdkPdf.read, EdkWorkspace.read]
+- `edk.pdf.tools.pdf.pdf_citations`
+  expected actions: [EdkPdf.read, EdkWorkspace.read]
+- PDF pure/mock checks cover valid single-page documents and citation tool
+  action boundaries without rendering pages.
+- `edk.eval.tools.eval.run_eval_case`
+  expected actions: [EdkEval.read, EdkWorkspace.read]
+- Eval pure/mock checks cover suite validation, deterministic fixture
+  construction, and write-receipt data construction without running cases.
+
+All mock modules in this fixture are deterministic data constructors. Action
+results are not asserted to have fake default bodies, snapshots, diffs, vector
+hits, directory entries, email deliveries, GitHub API payloads, document
+conversions, PDF parses, citations, or evaluation fixtures; the calls exist to
+keep package-owned action boundaries visible for future package-mode effect
+replay. The mocks are not default handlers and must not be registered as
+runtime substitutes for network, browser, git, vector, database, filesystem,
+email, GitHub, document, PDF, or evaluation actions.
+
+Scenario assertions use sequential guards rather than long boolean
+conjunctions, so this fixture does not depend on the current frontend accepting
+large `&&` assertion chains during HIR lowering/checking.
+
+`edk.db.tools.query.query_readonly` is intentionally unpublished while runtime
+mutation rejection is blocked in
+`tests/blocked/edk-db-query-readonly-runtime-guard.txt`; this fixture must not
+fake that guard with empty query results.

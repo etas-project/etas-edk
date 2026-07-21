@@ -1,0 +1,19 @@
+[package]
+name = "edk-email-raw-smtp-endpoint-not-tls-required"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw SmtpEndpoint does not satisfy TlsRequiredEndpoint"
+repository = "https://example.invalid/etas-edk-fixtures/edk-email-raw-smtp-endpoint-not-tls-required"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_email = { path = "../../../../packages/edk-email", import = "edk.email" }
+
+[[bin]]
+name = "edk-email-raw-smtp-endpoint-not-tls-required"
+module = "tests.edk.negative.edk_email_raw_smtp_endpoint_not_tls_required.main"
+flow = "main"

@@ -1,0 +1,57 @@
+`edk-http` exported scoped policy templates are blocked.
+
+Expected source:
+
+- `HttpReadOnly`;
+- `HttpAllowHosts`;
+- `HttpDenyMutations`;
+- `HttpNoPrivateNetwork`;
+- `HttpRequireTimeout`;
+- `HttpBoundedBody`.
+
+These templates must target `EdkHttp.request` and, where
+needed, validated request fields such as timeout and body limit. They must not
+require application authors to write lower-level `Net`, `Tls`, or `Stream`
+rules for ordinary HTTP policy.
+
+Current failure:
+
+Legacy source-local policy fixtures have been removed. EDK source now exposes
+the action family as `EdkHttp.request` with request details in
+`HttpActionRequest`; no `policy { allow ... }` or `policy { deny ... }` source
+is kept as a compatibility placeholder.
+
+Root API wrappers should keep method/host available to runtime payload policy,
+and EDK now keeps `get/post/...` as thin constructors that call the single
+public `request(req)` execution path. Current verification is blocked until
+payload-aware monitor/check metadata can inspect request evidence without
+putting runtime fields in action `<...>`. This must stay covered without
+reintroducing direct `perform` in each wrapper or publishing a broader host
+allow template.
+
+The remaining gap is the package template layer. `edk-http` cannot yet publish
+reusable templates that bind package-defined action arguments to caller-supplied
+hosts/methods or express request-field predicates over timeout/body-limit values
+in package metadata. Publishing `HttpReadOnly` or `HttpAllowHosts` today would
+either be a broad unscoped template or an unchecked naming convention.
+
+Required support:
+
+- package metadata export for reusable action argument templates over
+  `EdkHttp.request`;
+- policy predicates over request method, host, timeout, body limit, redirect,
+  and private-network classification;
+- package metadata export for scoped policy templates;
+- diagnostics and negative fixtures proving denied POST, denied private host,
+  missing timeout, and body-limit overflow are rejected by explicit monitor/check
+  metadata rather than default host behavior.
+
+Why implicit private-host binding or fallback is forbidden:
+
+Host-side allowlists, broad unscoped templates, or in-flow checks named like
+policies would hide the method/host authority boundary from frontend policy
+analysis. Local/private hosts must remain source-classified and
+policy-visible, but the default EDK request path must not hard-reject them;
+local test servers need the same transport path as external hosts. EDK must
+keep the template layer blocked until scoped metadata can represent the
+architecture-level templates.

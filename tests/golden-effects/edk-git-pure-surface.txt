@@ -1,0 +1,36 @@
+The `edk_git_pure_surface` fixture covers deterministic Git helper modules
+only:
+
+- diff header parsing and hunk counting;
+- conservative patch path-token escape validation, including absolute path,
+  `..` segment, backslash path, drive-style/colon path, tab/control characters,
+  and rename-target rejection while allowing `/dev/null` file headers;
+- repository and status-entry path validation with the same segment-aware escape
+  rules, including non-parent `..hidden` names;
+- conservative Git branch/ref token validation, including empty path components,
+  leading/trailing slashes, dot-prefixed components, trailing dot components,
+  `.lock` components, reflog syntax, wildcard/revision characters, tab
+  characters, and `..`;
+- remote reference construction plus name and URL-shape validation, including
+  rejection of whitespace/control characters, embedded HTTP credentials, empty
+  HTTP hosts, query/fragment markers, and relative/absolute remote path escapes;
+- status and status-entry constructors, including tab/control rejection in
+  state labels;
+- commit-message validation, including empty subject, subject CR/LF, and body CR
+  rejection;
+- deterministic mock read result and write receipt constructors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors: none.
+
+Package-mode `pkg update`, `pkg lock`, `check`, and `run` currently return
+successfully for this fixture.
+
+This fixture intentionally does not call `edk.git.repo.status`,
+`edk.git.diff.diff`, `edk.git.patch.apply_patch`,
+`edk.git.commit.commit`, or `edk.git.tools.repo.*`, because those expose
+runtime-mediated `EdkGit.*` actions and require repository/command handlers.
+Command-based Git execution must remain an explicit policy-visible
+`Command.run<GitSandbox>` implementation detail of a future default handler,
+not a hidden fallback inside these pure helpers.

@@ -1,0 +1,18 @@
+[package]
+name = "old-trait-keyword-forbidden-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving the old trait keyword is rejected"
+repository = "https://example.invalid/etas-edk-fixtures/old-trait-keyword-forbidden-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "old-trait-keyword-forbidden-negative"
+module = "tests.edk.negative.old_trait_keyword_forbidden.main"
+flow = "main"

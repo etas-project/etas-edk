@@ -1,0 +1,19 @@
+[package]
+name = "edk-email-raw-provider-endpoint-spec-not-target"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw ProviderEndpointSpec does not satisfy EmailProviderEndpointTarget"
+repository = "https://example.invalid/etas-edk-fixtures/edk-email-raw-provider-endpoint-spec-not-target"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_email = { path = "../../../../packages/edk-email", import = "edk.email" }
+
+[[bin]]
+name = "edk-email-raw-provider-endpoint-spec-not-target"
+module = "tests.edk.negative.edk_email_raw_provider_endpoint_spec_not_target.main"
+flow = "main"

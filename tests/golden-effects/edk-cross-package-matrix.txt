@@ -1,0 +1,48 @@
+Source-contract baseline for the cross-package matrix fixture.
+
+Fixture:
+
+`tests/fixtures/positive/edk_cross_package_matrix`
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently return
+successfully. Package-mode `run` remains blocked because the matrix intentionally
+requests real EDK actions and fails closed without host services such as
+Network.
+
+Expected scenario action coverage:
+
+- research assistant:
+  [EdkWeb.search, EdkVector.write, EdkEmail.send] plus pure edk-docs
+  plain-text-only sanitization before vector/email use, `Untrusted` search
+  result preservation through deterministic fixture data, safe email headers,
+  and explicit draft idempotency key.
+- report publisher:
+  [EdkWeb.fetch, EdkWorkspace.read, EdkWorkspace.write, EdkEmail.send] plus
+  workspace path/scope checks and safe/idempotent email draft metadata.
+- PR reviewer:
+  [EdkGit.read, EdkGitHub.pr_comment, EdkWorkspace.list, Secret.read] plus
+  Git/GitHub repo validation, PR validation, and stable comment key text.
+- PDF ingestion:
+  [EdkPdf.read, EdkWorkspace.read, EdkVector.write] plus mock PDF document
+  validation, citation-map counting, and vector record dimension checks.
+- browser capture:
+  [EdkBrowser.navigate, EdkBrowser.read, EdkWorkspace.read, EdkWorkspace.write]
+  plus pure edk-docs sanitization/report checks and workspace capture scope
+  validation.
+- workflow planning:
+  [EdkGitHub.read, EdkWorkspace.list, Secret.read] plus pure edk-algorithm
+  topological sort and dependency scheduling plus repo/PR/scope validation.
+- evaluation run:
+  [EdkEval.read, EdkEval.write, EdkWorkspace.read, EdkWorkspace.write] plus
+  suite/case/result validators, deterministic fixture counting, and trace
+  validity checks.
+
+This matrix is not a runtime integration test yet. It is the intended source
+contract that package-mode effects and traces must verify once runtime host
+services and trace replay are wired. Action outputs are not asserted to carry
+fake default bodies, pages, diffs, receipts, or result counts; concrete values
+in the matrix come from pure constructors or deterministic mocks.
+
+All scenario assertions use sequential guards rather than long boolean
+conjunctions, so this fixture does not depend on the current frontend accepting
+large `&&` assertion chains during HIR lowering.

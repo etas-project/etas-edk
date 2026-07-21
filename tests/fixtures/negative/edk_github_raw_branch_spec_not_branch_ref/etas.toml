@@ -1,0 +1,19 @@
+[package]
+name = "edk-github-raw-branch-spec-not-branch-ref"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw BranchSpec does not satisfy GitHubBranchRef"
+repository = "https://example.invalid/etas-edk-fixtures/edk-github-raw-branch-spec-not-branch-ref"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+
+[[bin]]
+name = "edk-github-raw-branch-spec-not-branch-ref"
+module = "tests.edk.negative.edk_github_raw_branch_spec_not_branch_ref.main"
+flow = "main"

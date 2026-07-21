@@ -1,0 +1,31 @@
+Source-contract baseline for edk-eval.
+
+The `edk-eval` package now locks, checks, and runs its pure package smoke in
+package mode. Runtime replay of the action-backed flows below still requires
+eval-store and workspace/file handlers with visible authority.
+
+Expected action boundary:
+
+flow golden.read_fixture
+  escaping effects: [EdkEval.read, EdkWorkspace.read, Error<EvalError>]
+  requested actions: [EdkEval.read]
+  declared lower requirement: [EdkWorkspace.read]
+  default actions: []
+  support: requires-host[FileIO]
+
+flow golden.write_result
+  escaping effects: [EdkEval.write, EdkWorkspace.write, Error<EvalError>]
+  requested actions: [EdkEval.write]
+  declared lower requirement: [EdkWorkspace.write]
+  default actions: []
+  support: requires-host[FileIO]
+
+Pure helpers:
+
+- assertions.assert_equal is pure.
+- pure.diff.diff_text is pure.
+- trace.match_trace is pure except for its declared EvalError row and checks
+  both expectation count and action/order pairs.
+
+This is not a default eval-store handler. Suite-scoped forms such as
+`EdkEval.write` remain blocked on package-defined action scope metadata.

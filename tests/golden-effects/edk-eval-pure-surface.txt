@@ -1,0 +1,37 @@
+Expected pure-surface baseline for edk-eval.
+
+Fixture:
+
+tests/fixtures/positive/edk_eval_pure_surface
+
+Expected escaping effects:
+
+- `main`: `![Error<EvalError>]`
+- assertion and diff helpers, including newline/carriage-return escaping for
+  stable single-line golden and diff diagnostics: `![]`
+- trace matching helpers with expectation and action-name token validation,
+  tab/URL-token rejection, strict ordered sequence matching, non-increasing
+  order rejection, and duplicate occurrence matching: `![Error<EvalError>]`
+- suite/case/result validators, including identifier token validation and suite
+  root escape rejection for absolute paths, `..` segments, backslashes, and
+  colon-style path tokens plus tab control characters: `![]`
+- pure eval tools `compare_golden` and `summarize_eval_result`: `![Error<EvalError>]`
+  for comparison and `![]` for result summarization;
+- mock fixture/result/receipt constructors and write receipt validators: `![]`
+
+No host effects are expected from this fixture. It exercises deterministic
+source-level helpers only.
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently return
+successfully for this fixture. Package-mode `run` remains blocked because
+imported `tool` aliases are not exposed as runtime values.
+
+Non-goals:
+
+- no default eval-store handler;
+- no hidden filesystem reads or writes;
+- no fake evaluation runner;
+- no `run_eval_case` tool call, because it exposes `EdkEval.read` and
+  `EdkWorkspace.read`;
+- no suite-scoped `EdkEval.read` or `EdkEval.write` replay until
+  package-defined action scope metadata exists.

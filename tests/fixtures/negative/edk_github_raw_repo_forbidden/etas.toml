@@ -1,0 +1,19 @@
+[package]
+name = "edk-github-raw-repo-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw strings cannot stand in for GitHubRepoRef"
+repository = "https://example.invalid/etas-edk-fixtures/edk-github-raw-repo-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+
+[[bin]]
+name = "edk-github-raw-repo-forbidden"
+module = "tests.edk.negative.edk_github_raw_repo_forbidden.main"
+flow = "main"

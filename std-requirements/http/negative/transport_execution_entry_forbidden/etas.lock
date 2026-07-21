@@ -1,0 +1,20 @@
+version = 1
+manifest_fingerprint = "etas-lock-input:v1|package=std-req-http-transport-execution-entry-forbidden|version=0.1.0|edition=2026|dependency:edk_http:import=edk.http,path=../../../../packages/edk-http|dependency:std:version=0.1"
+
+[[package]]
+name = "edk-http"
+version = "0.1.0"
+source = "vendor+.etas/vendor/edk/http"
+checksum = "blake3:760794b4cdecbc166b145936257aa6d512e2e284d2c01d81c3df009f4adba7ea"
+dependencies = ["std|std|0.1.0"]
+import_root = "edk.http"
+metadata_fingerprint = "blake3:c06438c7eed79144bedee3d1de94a39300009d72048c13cad85c5ece42e79816"
+
+[[package]]
+name = "std"
+version = "0.1.0"
+source = "builtin"
+checksum = "builtin:std"
+dependencies = []
+import_root = "std"
+metadata_fingerprint = "builtin:std"

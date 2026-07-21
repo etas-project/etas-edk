@@ -1,0 +1,19 @@
+[package]
+name = "edk-db-pure-surface"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK DB pure surface fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-db-pure-surface"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_db = { path = "../../../../packages/edk-db", import = "edk.db" }
+
+[[bin]]
+name = "edk-db-pure-surface"
+module = "tests.edk.db_pure_surface.main"
+flow = "main"

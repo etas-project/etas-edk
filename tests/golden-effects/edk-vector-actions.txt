@@ -1,0 +1,47 @@
+Source-summary baseline for edk-vector action-backed flows. The `edk-vector`
+package and pure-surface fixture now pass package-mode `pkg update`, `pkg
+lock`, `check`, and `run`; runtime replay of the action-backed flows below
+still requires embedding/vector-store handlers with visible authority.
+
+Captured with:
+
+etas effects src/edk/vector/retrieve.es
+
+Relevant entries:
+
+flow embed
+  escaping effects: [EdkEmbedding.embed]
+  requested actions: [EdkEmbedding.embed]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Agentic]
+
+flow search
+  escaping effects: [EdkVector.search]
+  requested actions: [EdkVector.search]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow upsert
+  escaping effects: [EdkVector.write]
+  requested actions: [EdkVector.write]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow retrieve
+  escaping effects: [EdkVector.search, EdkEmbedding.embed]
+  requested actions: [EdkVector.search, EdkEmbedding.embed]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Agentic, Network]
+
+This is not a fallback embedding provider or vector store. Embedding and vector
+store operations remain package-owned action boundaries awaiting provider/store
+metadata and handlers.
+
+`edk.vector.tools.retrieve` and `edk.vector.mocks.store` have been added as the
+architected tool/mock layer. They parse in source-level verification, and the
+`edk-vector` package plus pure-surface fixture now pass package-mode
+`pkg update`, `pkg lock`, `check`, and `run`.

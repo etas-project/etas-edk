@@ -1,0 +1,29 @@
+Fixture: tests/fixtures/positive/edk_db_pure_surface
+
+Status:
+
+- Source fixture parses and exercises pure `edk-db` SQL classification,
+  including comment-adjacent keyword boundaries, row decoding, pool option,
+  transaction option, and deterministic result constructors.
+- Package-mode `pkg update`, `pkg lock`, and `check` now succeed.
+- Package-mode `run` is blocked because imported `tool` aliases do not name
+  runtime values.
+
+Observed blocker:
+
+```text
+error[analysis::InvalidArguments]: import alias does not name a runtime value
+ --> tests/fixtures/positive/edk_db_pure_surface/src/tests/edk/db_pure_surface/main.es:15:26
+  |     let explained_plan = explain_query(sql_query("select * from users"));
+  |                          ^ import alias does not name a runtime value
+```
+
+Required frontend/package tooling behavior:
+
+- preserve imported `tool` declarations as callable runtime values when they
+  are pure and used by package-mode fixtures, or provide a specified tool-call
+  runtime boundary that can execute them without fake handlers.
+
+Do not inline `edk-db` source into the fixture, duplicate `explain_query` as a
+local helper, or add fake package registry metadata to make this fixture pass
+package-mode run.

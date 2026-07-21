@@ -1,0 +1,60 @@
+[package]
+name = "edk-cross-package-matrix"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK cross-package matrix fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-cross-package-matrix"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_algorithm = { path = "../../../../packages/edk-algorithm", import = "edk.algorithm" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+edk_docs = { path = "../../../../packages/edk-docs", import = "edk.docs" }
+edk_email = { path = "../../../../packages/edk-email", import = "edk.email" }
+edk_eval = { path = "../../../../packages/edk-eval", import = "edk.eval" }
+edk_git = { path = "../../../../packages/edk-git", import = "edk.git" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+edk_pdf = { path = "../../../../packages/edk-pdf", import = "edk.pdf" }
+edk_vector = { path = "../../../../packages/edk-vector", import = "edk.vector" }
+edk_web = { path = "../../../../packages/edk-web", import = "edk.web" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "matrix-research-assistant"
+module = "tests.edk.matrix.research_assistant.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-report-publisher"
+module = "tests.edk.matrix.report_publisher.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-pr-reviewer"
+module = "tests.edk.matrix.pr_reviewer.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-pdf-ingestion"
+module = "tests.edk.matrix.pdf_ingestion.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-browser-capture"
+module = "tests.edk.matrix.browser_capture.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-workflow-planning"
+module = "tests.edk.matrix.workflow_planning.main"
+flow = "main"
+
+[[bin]]
+name = "matrix-eval-run"
+module = "tests.edk.matrix.eval_run.main"
+flow = "main"

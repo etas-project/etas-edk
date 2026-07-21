@@ -1,0 +1,19 @@
+[package]
+name = "edk-github-raw-rest-path-spec-not-route"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw GitHubRestPathSpec does not satisfy GitHubRestRoute"
+repository = "https://example.invalid/etas-edk-fixtures/edk-github-raw-rest-path-spec-not-route"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+
+[[bin]]
+name = "edk-github-raw-rest-path-spec-not-route"
+module = "tests.edk.negative.edk_github_raw_rest_path_spec_not_route.main"
+flow = "main"

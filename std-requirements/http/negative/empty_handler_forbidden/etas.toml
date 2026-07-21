@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-empty-handler-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative std requirements probe proving empty HTTP handlers cannot satisfy EDK actions"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-empty-handler-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-empty-handler-forbidden"
+module = "std_requirements.http.negative.empty_handler_forbidden.main"
+flow = "main"

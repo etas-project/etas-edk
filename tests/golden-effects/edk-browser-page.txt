@@ -1,0 +1,41 @@
+Source-summary baseline for browser page actions. The `edk-browser` package now
+locks, checks, and runs its pure package smoke in package mode; runtime replay
+of the action-backed flows below still requires browser protocol handlers with
+visible authority.
+
+Captured with:
+
+etas effects src/edk/browser/page.es
+
+Relevant entries:
+
+flow navigate
+  escaping effects: [EdkBrowser.navigate]
+  requested actions: [EdkBrowser.navigate]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow click
+  escaping effects: [EdkBrowser.click]
+  requested actions: [EdkBrowser.click]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow read
+  escaping effects: [EdkBrowser.read]
+  requested actions: [EdkBrowser.read]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+This is not a fallback browser handler. Browser protocol execution remains a
+package-owned action boundary awaiting WebDriver/CDP/WebSocket substrate and
+package-defined domain scope metadata.
+
+`edk.browser.tools.page` and `edk.browser.mocks.browser` have been added as the
+architected tool/mock layer. The pure smoke/fixture also cover conservative URL
+path rejection for raw spaces, tabs, fragments, backslashes, and embedded
+absolute URLs without invoking browser protocol execution. They parse in
+source-level verification and package-mode smoke.

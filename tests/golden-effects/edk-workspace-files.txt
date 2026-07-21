@@ -1,0 +1,59 @@
+Verified with:
+
+etas effects src/edk/workspace/files.es
+
+Relevant entries:
+
+flow read
+  escaping effects: [EdkWorkspace.read]
+  requested actions: [EdkWorkspace.read]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+flow write
+  escaping effects: [EdkWorkspace.write]
+  requested actions: [EdkWorkspace.write]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+flow list
+  escaping effects: [EdkWorkspace.list]
+  requested actions: [EdkWorkspace.list]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+tool read_bytes
+  escaping effects: [EdkWorkspace.read]
+  requested actions: [EdkWorkspace.read]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+tool write_bytes
+  escaping effects: [EdkWorkspace.write]
+  requested actions: [EdkWorkspace.write]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+tool list_files
+  escaping effects: [EdkWorkspace.list]
+  requested actions: [EdkWorkspace.list]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[FileIO]
+
+This is not a fallback filesystem handler. It is the package action boundary
+awaiting package-defined action scope metadata and public filesystem substrate.
+Runtime path-escape rejection before host filesystem access is tracked in
+`tests/blocked/edk-workspace-path-escape-runtime-guard.txt`; the current source
+must not fake that guard with empty reads/lists, no-op writes, substitute paths,
+or hidden host errors.
+
+The design-level `read_text` and `write_text` tools remain pending until the
+bytes/text codec substrate is accepted. This package currently exposes byte
+tools only, plus deterministic filesystem fixture constructors in
+`edk.workspace.mocks.filesystem`.

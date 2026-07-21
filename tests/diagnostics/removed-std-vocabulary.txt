@@ -1,0 +1,25 @@
+Removed std vocabulary diagnostics.
+
+Fixtures:
+
+- `tests/fixtures/negative/std_web_unresolved`
+- `tests/fixtures/negative/removed_std_vocabulary`
+- `tests/fixtures/negative/removed_std_actions`
+
+Expected result:
+
+- `etas check tests/fixtures/negative/std_web_unresolved` fails with
+  `name::UnresolvedName` for `Web.search` and rejects the effect row as an
+  unresolved effect.
+- `etas check tests/fixtures/negative/removed_std_vocabulary` fails with
+  `name::UnresolvedName` for old external std/package vocabulary:
+  `Workspace.read`, `Db.query`, `Vector.search`, `Browser.navigate`,
+  `Email.send`, and `Payment.charge`.
+- `etas check tests/fixtures/negative/removed_std_actions` fails with
+  `effect::UnknownEffectTag` / unresolved effect behavior for removed actions
+  under still-existing roots: `Agentic.embed`, `Command.spawn`, and
+  `Memory.migrate`.
+
+These are negative fixtures. Passing any of these package checks would mean old
+std integration vocabulary leaked back into the frontend/effect registry and
+would invalidate EDK's package-owned action boundary.

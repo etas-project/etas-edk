@@ -1,0 +1,41 @@
+Expected pure-surface baseline for edk-docs.
+
+Fixture:
+
+tests/fixtures/positive/edk_docs_pure_surface
+
+Expected escaping effects:
+
+- `main`: `![]`
+- document format/input/output constructors and normalized format validators,
+  including expected media-type matching, unsafe format/media token rejection,
+  tab/parameter marker rejection, and PDF-derived text format construction:
+  `![]`
+- Markdown AST helpers, including empty-line skipping, heading levels 1 through
+  6, over-deep heading rejection, no-space heading-marker rejection, and block
+  validation with embedded newline rejection: `![]`
+- document model helpers, including AST validation and heading-level counts:
+  `![]`
+- conservative case-insensitive plain-text-only HTML sanitization helpers with
+  deterministic unsafe-marker finding counts for markup, active content tags,
+  entity-encoded markup, unsafe URI schemes, inline event handlers, `srcdoc`,
+  `style`, and CSS expression markers: `![]`
+- pure docs tools `extract_markdown_summary` and `sanitize_html`: `![]`
+- mock document constructors: `![]`
+
+No host effects are expected from this fixture. It exercises deterministic
+source-level helpers only.
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently return
+successfully for this fixture. Package-mode `run` remains blocked because
+imported `tool` aliases are not exposed as runtime values.
+
+Non-goals:
+
+- no file conversion flow;
+- no `convert_document` tool call, because it exposes `EdkDocs.convert`;
+- no byte/text codec shortcut;
+- no native DOCX/PDF parser or converter;
+- no default conversion handler;
+- no path-scoped `EdkDocs.convert` replay until package-defined action
+  scope metadata exists.

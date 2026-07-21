@@ -1,0 +1,38 @@
+Frontend stack overflow on long boolean conjunctions
+
+Blocked scenario:
+
+Executable EDK smoke fixtures often need many independent assertions. A single
+large expression made from dozens of `&&` checks should be accepted, lowered,
+checked, and executed normally.
+
+Current observed behavior:
+
+After adding conservative HTTP host/header assertions to
+`packages/edk-http/src/edk/http/package_smoke.es`, the package smoke used one
+large final `if` condition containing all assertions. `etas dump hir
+--diagnostics packages/edk-http/src/edk/http/package_smoke.es`,
+`etas check --all packages/edk-http`, and `etas run packages/edk-http`
+aborted with:
+
+```text
+thread 'main' has overflowed its stack
+fatal runtime error: stack overflow, aborting
+```
+
+The same semantic assertions pass after rewriting the fixture as sequential
+single-condition guards. This preserves the executable checks; it does not
+replace a failing EDK behavior with a fallback implementation.
+
+Required before unblocking:
+
+- HIR lowering/checking should handle long `&&` expressions without recursive
+  stack overflow, or report a normal diagnostic if there is an intentional
+  expression-depth limit.
+- The EDK smoke style can then use grouped assertion expressions without
+  risking process aborts.
+
+Current EDK decision:
+
+Use sequential guard assertions in executable fixtures. Do not remove assertions
+or publish narrower helper behavior just to avoid the frontend recursion bug.

@@ -1,0 +1,28 @@
+EDK tool-call runtime smoke is intentionally blocked.
+
+Current behavior:
+
+- A `tool` is the model-callable boundary.
+- The checked-HIR interpreter does not treat imported tools as ordinary runtime
+  flow values callable from package smoke entries.
+- Source fixtures may still import and call tool wrappers to keep public tool
+  signatures, effect rows, and package-owned action boundaries visible for AST,
+  metadata, and future package-mode effect replay.
+
+Required rule:
+
+Executable `package_smoke` entries and `tests/interpreter-smoke/` gates must not
+call EDK tools directly. They should call pure flows, ordinary public flows, or
+real action-backed flows only when the required runtime handlers are real Etas
+implementations over public substrate APIs.
+
+Rejected workaround:
+
+Do not add default handlers, host shims, duplicate flow wrappers, or fake action
+results just to make a tool-call fixture runnable.
+
+Current coverage split:
+
+- tool surfaces are covered by source fixtures and `tests/golden-effects/`;
+- executable smoke gates are limited to packages whose smoke entries use only
+  runtime-callable pure/flow code.

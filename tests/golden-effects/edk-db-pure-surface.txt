@@ -1,0 +1,49 @@
+The `edk_db_pure_surface` fixture covers pure database helper modules:
+
+- SQL classification for readonly, mutation, transaction, unknown queries, and
+  mixed readonly/mutation statements;
+- semicolon-delimited statement boundary classification, including compact
+  mixed statements and keyword-only commands followed by `;`;
+- CR/LF/tab whitespace normalization before keyword classification, so multiline
+  readonly queries, tab-separated mutations, and CR-separated transaction
+  statements cannot bypass the conservative classifier;
+- comment-adjacent and function-style keyword boundaries such as
+  `select/*...*/`, `delete/*...*/`, `begin/*...*/`, and `exec(...)`, plus a
+  negative readonly identifier case such as `deleted_at`;
+- leading block-comment keyword prefixes such as `/*leading*/select`,
+  `/*leading*/delete`, and `/*leading*/begin`;
+- high-impact mutation classification for merge/replace/grant/copy/call style
+  statements, plus conservative admin/session mutation classification for
+  vacuum/analyze/pragma/set/use/lock/refresh and savepoint transaction
+  statements;
+- pure `explain_query` tool delegation;
+- row cell lookup and explicit missing-cell lookup results;
+- deterministic query/exec result constructors;
+- pool and transaction option record constructors.
+- named SQL placeholder validation for safe parameter names and `:name` /
+  `@name` query/command references.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors:
+
+- `Error<IndexError>`, from strict `get_cell` lookup when callers choose the
+  checked form.
+
+Package-mode `pkg update`, `pkg lock`, and `check` currently return
+successfully for this fixture. Package-mode `run` remains blocked because
+imported `tool` aliases are not exposed as runtime values.
+
+This fixture intentionally does not call `edk.db.sql.query`,
+`edk.db.sql.exec`, because those expose runtime-mediated `EdkDb.*` actions and
+require a database handler. The pure
+`explain_query` tool is covered because it delegates only to SQL
+classification. The action boundary is covered separately by `edk-db-sql.txt`.
+
+The architecture's higher-order `transaction(ds, body)` API remains blocked
+until callback latent effects can be represented in source, HIR, package
+metadata, and effect summaries.
+
+`edk.db.tools.query.query_readonly` is intentionally unpublished until
+package-defined typed errors can reject non-readonly SQL before requesting
+`EdkDb.query`.

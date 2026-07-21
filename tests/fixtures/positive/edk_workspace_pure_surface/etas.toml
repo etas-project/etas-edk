@@ -1,0 +1,19 @@
+[package]
+name = "edk-workspace-pure-surface"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK workspace pure surface fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-workspace-pure-surface"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "edk-workspace-pure-surface"
+module = "tests.edk.workspace_pure_surface.main"
+flow = "main"

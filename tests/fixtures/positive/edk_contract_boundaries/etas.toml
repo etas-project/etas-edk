@@ -1,0 +1,22 @@
+[package]
+name = "edk-contract-boundaries"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK cross-package contract boundary fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-contract-boundaries"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_db = { path = "../../../../packages/edk-db", import = "edk.db" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "edk-contract-boundaries"
+module = "tests.edk.contract_boundaries.main"
+flow = "main"

@@ -1,0 +1,37 @@
+`edk-http` mock and dry-run trace execution is blocked.
+
+Expected source:
+
+Explicitly configured mocks should match `MockRoute` entries by method, host,
+and target, return a matched result for configured routes, fail unmatched
+requests, and emit trace facts that prove which mock route was used. A dry-run
+handler must be explicitly selected, must not pretend to perform real network
+I/O, and must emit trace facts that distinguish dry-run behavior from real
+handler execution.
+
+Current failure:
+
+Pure mock route matching is source-present and returns `matched = false` with a
+`MockMatchError` for unmatched requests, not a fake `HttpResponse`. No
+`handlers/dry_run.es` module is published until there is a real explicit
+dry-run handler. There is no package handler metadata or trace substrate that
+can attach mock/dry-run trace facts to `EdkHttp.request` without
+pretending that a production handler executed.
+
+Required support:
+
+- explicit mock/dry-run handler selection in package metadata;
+- trace event schema for mock route matches, unmatched mock failures, and
+  dry-run decisions;
+- effect/trace replay showing mock and dry-run handlers remain separate from
+  production default handlers;
+- diagnostics proving unmatched mock requests fail instead of falling through
+  to a production mock response.
+
+Why private host binding or fallback is forbidden:
+
+An automatic production mock, untraced dry-run response, or host-side fake HTTP
+client would make tests appear executable while hiding the fact that no real
+network substrate or checked handler trace ran. EDK may provide deterministic
+mock data constructors and pure route matching, but it must not auto-register
+them as runtime handlers.

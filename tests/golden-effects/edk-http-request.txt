@@ -1,0 +1,177 @@
+Verified with:
+
+etas effects src/edk/http.es
+etas effects src/edk/http/package_api_contract.es
+etas effects src/edk/http/transport.es
+
+Relevant entries:
+
+root flow request
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow get
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow post
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow put
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow patch
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow delete
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+root flow head
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_request
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flows check_get/check_api_get
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flows check_post/check_api_post
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_put
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_patch
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_delete
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_head
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name], EdkHttp.request]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+package API contract flow check_post_request_preserves_body
+  escaping effects: []
+  requested actions: []
+  default actions: []
+  determinism: Deterministic
+  support: local
+
+package API contract flow check_request_options_preserved
+  escaping effects: []
+  requested actions: []
+  default actions: []
+  determinism: Deterministic
+  support: local
+
+transport flow exchange_tls / exchange_tcp
+  escaping effects: [Error<HttpError>]
+  requested actions: [Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream]]
+  default actions: [Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Stream; features=EffectHandler]
+
+transport flow close_tls_after_error / close_tcp_after_error
+  escaping effects: []
+  requested actions: [Stream.close[std.stream.stream]]
+  default actions: [Stream.close[std.stream.stream]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Stream; features=EffectHandler]
+
+transport flow execute_transport / execute_request
+  escaping effects: [Error<HttpError>]
+  requested actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  default actions: [Net.tcp_connect[std.net.tcp.host, std.net.tcp.port], Stream.read[std.stream.stream], Stream.write[std.stream.stream], Stream.flush[std.stream.stream], Stream.close[std.stream.stream], Tls.handshake[std.tls.server_name]]
+  determinism: RuntimeMediated
+  support: requires-orchestration[host=Tcp, Stream, Tls; features=EffectHandler]
+
+The source-level public rows apply the transport handler explicitly. The package
+action no longer escapes from ordinary root APIs, but the requested action
+footprint remains visible for policy and trace alongside default transport
+actions. Current summaries preserve `EdkHttp.request`
+for generic `request(req)` and precise literal-method wrapper actions such as
+`EdkHttp.request`.
+
+`EdkHttpDefault` is the default-handler layout alias, not a runtime metadata
+fallback. The source transport handler delegates to `edk.http.transport`, whose
+effect summary currently preserves
+`Net.tcp_connect`, `Tls.handshake`, `Stream.write`, `Stream.flush`,
+`Stream.read`, and `Stream.close`. `edk.http.transport` keeps that proof
+package-local, and `edk.http.package_api_contract` proves root APIs retain those
+default actions. Checked-HIR execution classifies the transport path as
+`requires-orchestration[host=Tcp, Stream, Tls]`, so it is not a local no-action
+network path. Stream write, flush, read, and TLS
+handshake failures attempt best-effort close through `Stream.close` before
+raising the original `HttpError` classification; close failures during that
+cleanup are intentionally not allowed to replace the original transport
+failure. Response read failures are mapped through `response_body_read` before
+raising `Error<HttpError>`; both directly imported `LimitExceeded` and
+qualified `StreamError.LimitExceeded` are mapped to `response_body_limit`.
+Package-local runtime replay now proves public `request(TRACE ...)` raises
+`HttpError.invalid_method` before transport. A loopback
+get/post/body-limit/malformed response contract exists; it fails closed without
+`--allow-net` and returns `0` with explicit
+`--allow-effects --allow-net 127.0.0.1:<port>`. External root API checked-effect
+fact replay is covered by `std-requirements/http/positive/external_root_api_effect_facts`.
+See
+`tests/blocked/edk-http-default-handler-substrate.txt`.
+
+`post_json`, `fetch_text`, `fetch_json`, and `submit_json` are not public APIs;
+this applies to both the root `edk.http` facade and `edk.http.api`.
+A typed JSON HTTP layer is blocked in
+`tests/blocked/edk-http-typed-json-codec.txt` and must not be represented by
+stringly convenience wrappers.

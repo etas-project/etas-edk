@@ -1,0 +1,35 @@
+Source-contract baseline for edk-email.
+
+The `edk-email` package now locks, checks, and runs its pure package smoke in
+package mode. Runtime replay of the action-backed flows below still requires
+SMTP/provider handlers with visible authority.
+
+Expected action boundary:
+
+flow provider.send
+  escaping effects: [EdkEmail.send, Error<EmailError>]
+  requested actions: [EdkEmail.send]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow provider.read
+  escaping effects: [EdkEmail.read, Error<EmailError>]
+  requested actions: [EdkEmail.read]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+Tool wrappers:
+
+- tools.mail.draft_email is pure.
+- tools.mail.send_email preserves [EdkEmail.send, Error<EmailError>].
+- tools.mail.search_mailbox preserves [EdkEmail.read, Error<EmailError>].
+
+This is not a default SMTP/provider handler. Account-scoped forms such as
+`EdkEmail.send` remain blocked on package-defined action scope
+metadata.
+Send replay/idempotency metadata is tracked separately in
+`tests/blocked/edk-email-send-replay-metadata.txt`; the pure
+`EmailDraft.idempotency_key` field is not a replacement for action metadata or
+golden trace replay.

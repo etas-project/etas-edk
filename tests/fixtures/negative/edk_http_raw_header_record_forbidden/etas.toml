@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-raw-header-record-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw HeaderName cannot construct request Header evidence"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-raw-header-record-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-raw-header-record-forbidden"
+module = "tests.edk.negative.edk_http_raw_header_record_forbidden.main"
+flow = "main"

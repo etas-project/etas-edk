@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-raw-method-constructor-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving HttpMethod evidence cannot be forged with a raw nominal constructor"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-raw-method-constructor-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-raw-method-constructor-forbidden"
+module = "tests.edk.negative.edk_http_raw_method_constructor_forbidden.main"
+flow = "main"

@@ -1,0 +1,43 @@
+Reusable EDK allow/require policy templates are blocked until package metadata
+can export package-defined action families and runtime payload predicates.
+
+Safe deny-only templates are source-present under each integration package's
+`policies/` module. They do not grant authority and do not register handlers.
+
+Source-local HTTP policy fixtures cover the static action family. Exact
+method/host policy matching is blocked on runtime payload inspection:
+
+- `std-requirements/http/positive/scoped_policy_allow_get` accepts
+  `EdkHttp.request`;
+- `std-requirements/http/negative/scoped_policy_deny_post` rejects
+  `EdkHttp.request`.
+- `std-requirements/http/positive/root_wrapper_exact_policy_scope/probe.es`
+  is the package-local target probe for exact
+  `EdkHttp.request` coverage over root
+  `edk.http.get(...)` and direct `edk.http.api.get(...)`.
+
+Root `edk.http.get/post/...` wrapper calls now route through the single public
+`request(req)` execution path. Direct `edk.http.api.get/post/...` calls use the
+same path. EDK now records the static action family `EdkHttp.request`;
+method/host proof is a runtime payload policy/replay concern. Keep the target
+fixtures without publishing broad host allow templates or reintroducing direct
+per-method `perform` calls in the wrappers.
+
+Still-blocked reusable templates include:
+
+- exported `EdkHttp.request` allowlists for package/caller
+  configured methods and hosts;
+- `EdkWorkspace.read<R>`, `write<R>`, and `list<R>` path scopes;
+- `EdkEmail.send` requiring `Approval.request` before delivery;
+- `EdkDb.query` read-only datasource allowlists;
+- `EdkVector.search` and `EdkEmbedding.embed` scoped allowlists;
+- `EdkBrowser.navigate`, `click`, and `read` payload-aware browser policies;
+- `EdkGit.read` and `EdkGit.write` repository scopes;
+- `EdkGitHub.issue_create<R>`, `pr_comment<R>`, and `read<R>` scopes;
+- `EdkPdf.read`, `EdkDocs.convert`, and `EdkEval.write`
+  scopes.
+
+Do not replace these with broad unscoped allow policies. Broad allow templates
+would make the EDK policy surface look complete while hiding the host, path,
+account, datasource, store, repository, format, or suite boundary required by
+the architecture.

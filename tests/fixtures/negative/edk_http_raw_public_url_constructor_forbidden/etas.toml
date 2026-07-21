@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-raw-public-url-constructor-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving PublicHttpUrl evidence cannot be forged from raw Url"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-raw-public-url-constructor-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-raw-public-url-constructor-forbidden"
+module = "tests.edk.negative.edk_http_raw_public_url_constructor_forbidden.main"
+flow = "main"

@@ -1,0 +1,19 @@
+[package]
+name = "std-req-http-scoped-policy-deny-post"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative std requirements probe proving scoped EdkHttp.request POST deny policies reject direct actions"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-scoped-policy-deny-post"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "std-req-http-scoped-policy-deny-post"
+module = "std_requirements.http.negative.scoped_policy_deny_post.main"
+flow = "main"

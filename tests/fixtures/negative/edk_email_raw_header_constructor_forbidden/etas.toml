@@ -1,0 +1,19 @@
+[package]
+name = "edk-email-raw-header-constructor-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving EmailHeader evidence cannot be forged from raw spec"
+repository = "https://example.invalid/etas-edk-fixtures/edk-email-raw-header-constructor-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_email = { path = "../../../../packages/edk-email", import = "edk.email" }
+
+[[bin]]
+name = "edk-email-raw-header-constructor-forbidden"
+module = "tests.edk.negative.edk_email_raw_header_constructor_forbidden.main"
+flow = "main"

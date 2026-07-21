@@ -1,0 +1,29 @@
+The `edk_vector_pure_surface` fixture covers deterministic vector helper
+modules only:
+
+- integer embedding construction, malformed dimension rejection, model dimension
+  checks, and conservative model token rejection;
+- dot product, L1 distance, and squared L2 distance;
+- chunking policy validation, line chunk construction, line-only policy chunk
+  aggregation, overlong-line isolation, and rejection of overlap policies for
+  the line-only helper;
+- metadata filter matching, wildcard filters, value-only filter rejection, and
+  unsafe filter key/value rejection;
+- store/model/record/query shape validation, including unsafe store identity,
+  unsafe record IDs, invalid metadata key/value pairs, non-positive `top_k`, and
+  oversized `top_k` rejection;
+- vector query construction and record/query dimension compatibility checks;
+- deterministic mock hit/result/write receipt constructors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors:
+
+- `Error<IndexError>`, from bounded array access in similarity and fixture
+  assertions.
+
+This fixture intentionally does not call `edk.vector.embed.embed`,
+`edk.vector.store.search`, `edk.vector.store.upsert`, `edk.vector.retrieve`, or
+`edk.vector.tools.retrieve.*`, because those expose runtime-mediated
+`EdkEmbedding.embed` and `EdkVector.*` actions and require provider/store
+handlers.

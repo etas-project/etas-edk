@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-wire-request-shape"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Std requirements probe for source-visible HttpWireRequest headers"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-wire-request-shape"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-wire-request-shape"
+module = "std_requirements.http.positive.http_wire_request_shape.main"
+flow = "main"

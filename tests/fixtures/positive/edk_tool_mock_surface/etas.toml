@@ -1,0 +1,49 @@
+[package]
+name = "edk-tool-mock-surface"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK tool and mock surface fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-tool-mock-surface"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+edk_db = { path = "../../../../packages/edk-db", import = "edk.db" }
+edk_docs = { path = "../../../../packages/edk-docs", import = "edk.docs" }
+edk_email = { path = "../../../../packages/edk-email", import = "edk.email" }
+edk_eval = { path = "../../../../packages/edk-eval", import = "edk.eval" }
+edk_git = { path = "../../../../packages/edk-git", import = "edk.git" }
+edk_github = { path = "../../../../packages/edk-github", import = "edk.github" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+edk_pdf = { path = "../../../../packages/edk-pdf", import = "edk.pdf" }
+edk_vector = { path = "../../../../packages/edk-vector", import = "edk.vector" }
+edk_workspace = { path = "../../../../packages/edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "tool-http-db"
+module = "tests.edk.tool_mock_surface.http_db.main"
+flow = "main"
+
+[[bin]]
+name = "tool-browser-git"
+module = "tests.edk.tool_mock_surface.browser_git.main"
+flow = "main"
+
+[[bin]]
+name = "tool-vector-workspace"
+module = "tests.edk.tool_mock_surface.vector_workspace.main"
+flow = "main"
+
+[[bin]]
+name = "tool-email-github"
+module = "tests.edk.tool_mock_surface.email_github.main"
+flow = "main"
+
+[[bin]]
+name = "tool-docs-pdf-eval"
+module = "tests.edk.tool_mock_surface.docs_pdf_eval.main"
+flow = "main"

@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-response-body-text-decode"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive std requirements probe for HTTP response body text decode support"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-response-body-text-decode"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-response-body-text-decode"
+module = "std_requirements.http.positive.http_response_body_text_decode.main"
+flow = "main"

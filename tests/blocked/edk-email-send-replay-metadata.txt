@@ -1,0 +1,35 @@
+edk-email send replay/idempotency metadata is blocked until package metadata and
+effect replay can describe non-idempotent package actions.
+
+Required architecture behavior:
+
+- `EdkEmail.send` is non-idempotent.
+- package metadata must expose replay/idempotency semantics for send actions.
+- golden traces must prove the idempotency key and send action ordering without
+  hiding delivery behind a default handler.
+
+Current source status:
+
+- `EmailDraft` and `EmailReceipt` carry an `idempotency_key` field;
+- `edk.email.provider.send` checks account and whole-draft validity, including
+  the source-level idempotency key, before requesting `EdkEmail.send`;
+- `edk.email.provider.read` checks account and mailbox-query validity before
+  requesting `EdkEmail.read`;
+- deterministic mocks preserve that field for pure fixture coverage;
+- package metadata cannot yet publish EDK-owned action replay/idempotency
+  semantics, and package-mode trace replay cannot yet prove non-idempotent send
+  ordering or replay safety.
+
+Rejected workaround:
+
+Do not treat the ordinary `EmailDraft.idempotency_key` field as complete action
+metadata, and do not add a fake delivery/draft-only default handler just to emit
+trace events. The replay contract belongs to package metadata, policy/effect
+summaries, and real handler traces.
+
+Required before unblocking:
+
+- package metadata for EDK-owned action determinism/idempotency/replay fields;
+- package-mode golden trace replay for `EdkEmail.send`;
+- real SMTP/provider/draft-only handlers over public lower-level substrate or
+  explicit test-handler metadata.

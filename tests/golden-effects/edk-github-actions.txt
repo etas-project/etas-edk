@@ -1,0 +1,30 @@
+Source-contract baseline for edk-github.
+
+The `edk-github` package now locks, checks, and runs its pure package smoke in
+package mode. Runtime replay of the action-backed flows below still requires
+GitHub, HTTP, Git, and secret handlers with visible authority.
+
+Expected action boundary:
+
+flow issue.create_issue
+  escaping effects: [EdkGitHub.issue_create, Secret.read, Error<GitHubError>]
+  requested actions: [EdkGitHub.issue_create]
+  default actions: []
+  support: requires-host[Network, Secret]
+
+flow pr.comment_pr
+  escaping effects: [EdkGitHub.pr_comment, Secret.read, Error<GitHubError>]
+  requested actions: [EdkGitHub.pr_comment]
+  default actions: []
+  support: requires-host[Network, Secret]
+
+flow pr.get_pr / repo.read
+  escaping effects: [EdkGitHub.read, Secret.read, Error<GitHubError>]
+  requested actions: [EdkGitHub.read]
+  default actions: []
+  support: requires-host[Network, Secret]
+
+This is not a default GitHub REST handler. Token reads must remain visible
+through `Secret.read`, and repo-scoped forms such as
+`EdkGitHub.pr_comment<R>` remain blocked on package-defined action scope
+metadata.

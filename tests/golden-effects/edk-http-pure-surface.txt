@@ -1,0 +1,44 @@
+The `edk_http_pure_surface` fixture covers pure HTTP helper modules only:
+
+- URL construction and absolute URL parsing, including query strings without
+  polluting the normalized host scope;
+- HTTP/HTTPS default port construction, port validator checks, and preflight
+  rejection for invalid direct `Url.port` values;
+- unsupported URL scheme rejection for non-HTTP(S) inputs;
+- missing URL scheme separator, missing host, and parser-level invalid host
+  rejection for user-info forms;
+- direct host validator rejection for unsafe host-label, tab/space/control,
+  repeated-dot, leading/trailing-dot, leading/trailing-hyphen, underscore,
+  user-info, port, and path/query separator forms;
+- private/reserved host classification for future policy metadata without
+  making local test hosts syntactically invalid;
+- parser-side backslash host, backslash path/query, CR/LF path/query,
+  repeated-dot host, leading/trailing-dot host, leading/trailing-hyphen host,
+  underscore host, fragment, raw-space, and tab path/query injection rejection;
+- header normalization, lookup, CR/LF injection-safe validation, HTTP token
+  separator rejection for header names, managed `Host`/`Content-Length` rules,
+  and `Content-Type` overwrite behavior;
+- request/response body constructors for text and encoded bytes;
+- request method normalization, supported-method validation, and wire request
+  lowering;
+- method/scheme/host/port request-scope extraction;
+- response decoding, status-code classification, and invalid status rejection;
+- body-limit, redirect-limit, retry-plan, and SSRF-risk helper checks;
+- content-type checks;
+- deterministic mock response constructors and explicit mock route matching,
+  including `matched = false` plus `MockMatchError` for unmatched requests,
+  without returning a fake `HttpResponse`.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors:
+
+- `Error<IndexError>`, from bounded array access in URL parsing.
+
+This fixture intentionally does not call
+`edk.http.{request,get,post,put,patch,delete,head}`, because those expose the runtime-mediated
+`EdkHttp.request` action and require a host handler. That action boundary is
+covered separately by `edk-http-request.txt`.
+
+Executable coverage for the explicit `host:port` parser branch is part of this
+pure-surface fixture and `packages/edk-http/src/edk/http/package_smoke.es`.

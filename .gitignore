@@ -1,0 +1,8 @@
+target/
+**/.etas/
+.DS_Store
+*.tmp
+*.log
+.env
+.env.*
+!.env.example

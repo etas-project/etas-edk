@@ -1,0 +1,20 @@
+[package]
+name = "edk-docs"
+version = "0.1.0"
+edition = "2026"
+license = "MIT OR Apache-2.0"
+description = "Official EDK document package skeleton"
+repository = "https://github.com/etas-project/etas-edk"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_pdf = { path = "../edk-pdf", import = "edk.pdf" }
+edk_workspace = { path = "../edk-workspace", import = "edk.workspace" }
+
+[[bin]]
+name = "edk-docs-smoke"
+module = "edk.docs.package_smoke"
+flow = "main"

@@ -1,0 +1,18 @@
+[package]
+name = "edk-db"
+version = "0.1.0"
+edition = "2026"
+license = "MIT OR Apache-2.0"
+description = "Official EDK database package skeleton"
+repository = "https://github.com/etas-project/etas-edk"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "edk-db-smoke"
+module = "edk.db.package_smoke"
+flow = "main"

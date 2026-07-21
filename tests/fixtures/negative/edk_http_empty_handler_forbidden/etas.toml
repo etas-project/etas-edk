@@ -1,0 +1,18 @@
+[package]
+name = "edk-http-empty-handler-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving empty HTTP handlers cannot satisfy a EDK action"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-empty-handler-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "edk-http-empty-handler-forbidden"
+module = "tests.edk.negative.edk_http_empty_handler_forbidden.main"
+flow = "main"

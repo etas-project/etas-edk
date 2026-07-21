@@ -1,0 +1,43 @@
+Verified with:
+
+etas effects src/edk/db/sql.es
+
+Relevant entries:
+
+flow query
+  escaping effects: [EdkDb.query]
+  requested actions: [EdkDb.query]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+flow exec
+  escaping effects: [EdkDb.exec]
+  requested actions: [EdkDb.exec]
+  default actions: []
+  determinism: RuntimeMediated
+  support: requires-host[Network]
+
+tool explain_query
+  escaping effects: []
+  requested actions: []
+  default actions: []
+  determinism: Deterministic
+  support: local
+
+This is not a fallback database handler. It is the package action boundary
+awaiting package-defined datasource scope metadata and database driver
+substrate.
+`query_readonly` is intentionally unpublished until it can reject non-readonly
+SQL as a package-defined typed error before requesting `EdkDb.query`.
+EDK must not fake that guard with empty results, SQL rewrites, or opaque
+host-side validation.
+
+The architecture's higher-order `transaction(ds, body)` API is not represented
+by begin/commit/rollback wrapper flows in this slice; callback latent-effect
+preservation is tracked as a substrate gap and a blocked higher-order API
+publication gate.
+
+`edk.db.mocks.in_memory` contains deterministic result constructors only; it
+does not register or provide a default database handler. `run_migration` remains
+pending until high-impact policy metadata can be expressed.

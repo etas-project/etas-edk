@@ -1,0 +1,28 @@
+Fixture:
+
+tests/fixtures/positive/edk_docs_pure_surface
+
+Current blocker:
+
+The fixture depends on `edk-docs`, `edk-pdf`, and `edk-workspace` as local path
+dependencies. Package materialization now succeeds: `etas pkg update .`,
+`etas pkg lock .`, and `etas check .` all pass.
+
+Observed command:
+
+- `etas run .` from this fixture fails with
+  `analysis::InvalidArguments` because imported pure `tool` aliases such as
+  `extract_markdown_summary` do not name runtime values.
+
+Expected source coverage:
+
+- document format and conversion option constructors;
+- deterministic document input/output mock constructors;
+- Markdown single-line and multi-line AST classification;
+- document AST count/filter helpers;
+- conservative plain-text-only HTML risk detection and empty-output
+  sanitization for markup, active content tags, unsafe URI schemes, inline
+  event handlers, `srcdoc`, `style`, or other unsafe markers.
+
+This fixture must not introduce file conversion, byte/text codec shortcuts,
+native DOCX/PDF conversion, or hidden default handlers.

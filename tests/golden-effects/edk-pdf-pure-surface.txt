@@ -1,0 +1,38 @@
+Expected pure-surface baseline for edk-pdf.
+
+Fixture:
+
+tests/fixtures/positive/edk_pdf_pure_surface
+
+Expected escaping effects:
+
+- `main`: `![]`
+- pure document/mock constructors: `![]`
+- pure PDF header/encryption-marker helpers, including supported-version
+  header validation and malformed/incomplete header rejection: `![]`
+- pure text layout and citation helpers, including empty search-text and empty
+  or unsafe citation-prefix rejection, citation key token validation, citation
+  key uniqueness, tab/URL-token rejection, and citation page-reference
+  validation: `![]`
+- mock document validators for metadata page counts, unique page numbers, spans,
+  images, pages, outlines, metadata text control characters, and outline page
+  references, including unsafe image identifier rejection, unsafe image
+  media-type token rejection, outline title control-character rejection, and
+  text-span page-boundary validation: `![]`
+- render option constructors and validators, including render format
+  control-character rejection: `![]`
+
+No host effects are expected from this fixture. It exercises deterministic
+source-level helpers only.
+
+Package-mode `pkg update`, `pkg lock`, `check`, and `run` currently return
+successfully for this fixture.
+
+Non-goals:
+
+- no native PDF parser;
+- no page renderer;
+- no default handler;
+- no placeholder image or artifact id;
+- no path-scoped `EdkPdf.read` replay until package-defined action scope
+  metadata exists.

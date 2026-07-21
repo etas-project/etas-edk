@@ -1,0 +1,19 @@
+[package]
+name = "edk-vector-pure-surface"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "EDK vector pure surface fixture"
+repository = "https://example.invalid/etas-edk-fixtures/edk-vector-pure-surface"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_vector = { path = "../../../../packages/edk-vector", import = "edk.vector" }
+
+[[bin]]
+name = "edk-vector-pure-surface"
+module = "tests.edk.vector_pure_surface.main"
+flow = "main"

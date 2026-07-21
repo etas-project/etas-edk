@@ -1,0 +1,27 @@
+The `edk_browser_pure_surface` fixture covers deterministic browser helper
+modules only:
+
+- selector parsing, selector-kind predicates, text selector prefix
+  normalization, empty selector rejection, and CR/LF selector rejection;
+- URL path normalization plus conservative host/scheme/path validation,
+  including unsafe host-label and embedded-URL path rejection;
+- profile/session constructors, profile/session token validation, and
+  normalized-origin validation;
+- navigation and click option constructors plus navigation-option validation;
+- screenshot request/reference shape constructors plus media-type and
+  artifact-id validation;
+- DOM summary, node count, text containment helpers, and empty search-text
+  rejection;
+- deterministic mock snapshot constructors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors: none.
+
+Package-mode `pkg update`, `pkg lock`, `check`, and `run` currently return
+successfully for this fixture.
+
+This fixture intentionally does not call `edk.browser.page.navigate`,
+`edk.browser.page.click`, `edk.browser.page.read`, or `edk.browser.tools.page.*`,
+because those expose runtime-mediated `EdkBrowser.*` actions and require
+browser/WebDriver/CDP handlers.

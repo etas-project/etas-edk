@@ -1,0 +1,34 @@
+GitHub non-idempotent action replay metadata is not complete in this source
+slice.
+
+Required architecture behavior:
+
+- `EdkGitHub.issue_create<R>` and `EdkGitHub.pr_comment<R>` must expose
+  replay/idempotency metadata for non-idempotent API writes.
+- Effect summaries and golden traces must preserve that replay contract without
+  hiding the action in an HTTP handler.
+
+Current implemented surface:
+
+- `IssueDraft.idempotency_key` is an ordinary source-level field and is validated
+  by `edk.github.issue.is_valid_issue_draft`.
+- `edk.github.issue.create_issue` checks `is_valid_issue_draft` and raises
+  `Error<GitHubError>` before requesting `EdkGitHub.issue_create` when the
+  draft is invalid.
+- `comment_pr(repo, pr, comment)` consumes checked `ReviewComment<...>`
+  evidence before requesting `EdkGitHub.pr_comment`, but still lacks
+  action-level replay metadata because package metadata cannot yet describe
+  replay/idempotency semantics for package-owned actions.
+
+Rejected workaround:
+
+Do not treat a body marker, fake comment ID, local mock result, hidden HTTP
+handler, or deterministic fixture constructor as replay metadata. Replay belongs
+to package metadata, policy/effect summaries, and future trace replay.
+
+Exit criteria:
+
+- package metadata can publish EDK-owned action replay/idempotency fields;
+- effect replay can show `EdkGitHub.issue_create<R>` and
+  `EdkGitHub.pr_comment<R>` with replay metadata;
+- golden traces can verify retries without duplicate issue/comment creation.

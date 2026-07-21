@@ -1,0 +1,18 @@
+[package]
+name = "custom-action-scope-gap-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture for missing package-defined custom action scope metadata"
+repository = "https://example.invalid/etas-edk-fixtures/custom-action-scope-gap-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "custom-action-scope-gap-negative"
+module = "tests.edk.negative.custom_action_scope_gap.main"
+flow = "main"

@@ -1,0 +1,20 @@
+version = 1
+manifest_fingerprint = "etas-lock-input:v1|package=edk-http-unhandled-action-no-handler|version=0.1.0|edition=2026|dependency:edk_http:import=edk.http,path=../../../../packages/edk-http|dependency:std:version=0.1"
+
+[[package]]
+name = "edk-http"
+version = "0.1.0"
+source = "vendor+.etas/vendor/edk/http"
+checksum = "blake3:8dece4ad167428c7f9fee79941816995abc07ca1501d2270a82c0ee0cdf288ae"
+dependencies = ["std|std|0.1.0"]
+import_root = "edk.http"
+metadata_fingerprint = "blake3:e4d6d05b75b3c6e824cc82cadd55ce658cb0828a914306636254918a3d169331"
+
+[[package]]
+name = "std"
+version = "0.1.0"
+source = "builtin"
+checksum = "builtin:std"
+dependencies = []
+import_root = "std"
+metadata_fingerprint = "builtin:std"

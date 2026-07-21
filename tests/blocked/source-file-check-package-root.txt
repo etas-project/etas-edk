@@ -1,0 +1,18 @@
+Source-file type/effect checking inside a package root is currently blocked by
+package lock discovery.
+
+Observed command:
+
+`etas check --no-config <repo>/etas-edk/packages/edk-email/src/edk/email/package_smoke.es`
+
+Observed result:
+
+The CLI still discovers `packages/edk-email/etas.toml` from the supplied file
+path and fails with `package.lockfile.missing` before checking the selected
+source graph.
+
+Impact:
+
+For packages with required local path dependencies, `etas dump ast` can verify
+syntax, but source-level type/effect checking remains hidden behind package
+materialization.

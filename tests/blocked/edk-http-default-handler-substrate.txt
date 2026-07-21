@@ -1,0 +1,135 @@
+`edk-http` package handler execution is partially implemented. Explicit
+loopback response success is covered, while broader network/runtime support
+still requires configured host authorization and package/runtime replay support.
+
+Expected source:
+
+`edk.http.request(req)` and method wrappers should perform
+`EdkHttp.request` and immediately handle it with
+the source transport handler. The implementation should apply client defaults,
+validate method, URL, headers, body limit and body length, timeout, retry
+policy, redirect policy, and SSRF/private-network classification, lower the EDK `HttpRequest` to a std wire request,
+connect with `std.net.tcp.connect`, upgrade with `std.tls.connect` for HTTPS,
+write with `std.stream.write_all`, flush with `std.stream.flush`, read with
+`std.stream.read_until_limit`, close with `std.stream.close`, decode with
+`std.http.codec`, and return `HttpResponse` or `Error<HttpError>`.
+
+Current failure:
+
+`EdkHttpDefault` now exists as a source-level layout alias and public root APIs
+apply the transport handler internally. `EdkHttp.request` no longer
+escapes from those ordinary public calls, while requested-action facts still
+record the package action.
+
+The source transport handler delegates to `edk.http.transport`. The transport currently
+validates the request, preserves private/reserved host access for local test
+servers while leaving those hosts source-classified for future policy metadata,
+injects checked `Host` authority, forwards caller headers through the source-visible std wire type,
+rejects non-empty request bodies before they can be silently dropped, encodes
+the source-visible `HttpWireRequest` head through
+`std.http.codec`, opens TCP through `std.net.tcp`, upgrades HTTPS through
+`std.tls`, writes through `std.stream.write_all`, flushes with
+`std.stream.flush`, reads with `std.stream.read_until_limit`, closes with
+`std.stream.close`, and decodes the response head with `std.http.codec`.
+`read_until_limit` failures are mapped to `response_body_read` so timeout,
+closed-stream, host, and body-limit failures on response reads do not get
+reported as generic write/flush/close stream failures.
+
+Write, flush, response-read, and TLS handshake failures now attempt
+best-effort `Stream.close` before raising the original `HttpError`
+classification. Cleanup close failure is deliberately not reported as response
+success or used to replace the original transport failure.
+
+The transport now decodes the response head with
+`std.http.codec.decode_response_head`, decodes the full wire response with
+`std.http.codec.decode_response`, rejects invalid response status values as
+codec errors, returns valid response body bytes as `ResponseBody.raw`, and
+populates `ResponseBody.text` through the public std text codec. Package-local
+helpers decode raw bytes with `Replace`; the checked transport path decodes
+with `Strict` and maps `InvalidUtf8` to `HttpError`.
+
+Runtime inspection of std `Result` helpers is now covered by HTTP requirements
+fixtures. `std.result.is_err`, `std.bytes.len`, and source-level
+`match decode_response(...) { Ok(...) => ..., Err(MalformedMessage) => ... }`
+run through `std-requirements/http/positive/*` probes.
+
+Exact `StreamError.LimitExceeded` qualified-path classification is now covered.
+Direct `import std.stream.{LimitExceeded}` and qualified
+`StreamError.LimitExceeded` both run; EDK uses that path to map
+`read_until_limit` overflow to `response_body_limit`.
+
+Current repro evidence:
+
+- `std-requirements/http/positive/std_stream_substrate` checks that
+  `std.net.tcp.TcpStream` and `std.tls.TlsStream` can be passed to
+  `std.stream.write_all`, `std.stream.flush`, `std.stream.read_until_limit`,
+  and `std.stream.close`;
+- `std-requirements/http/positive/http_wire_request_shape` checks that source
+  can construct `HttpWireRequest` with `version`, `List<HttpHeader>`, `Host`,
+  and a non-empty `bytes` body from `std.codec.text.utf8_encode`.
+- `std-requirements/http/positive/http_response_body_text_decode` covers
+  response body bytes-to-text decode.
+- `std-requirements/http/positive/http_codec_result_match` covers
+  `Ok`/`Err(MalformedMessage)` Result matching for std HTTP codec values.
+- `std-requirements/http/positive/std_bytes_len_runtime` covers runtime
+  `std.bytes.len`.
+- `std-requirements/http/positive/stream_error_limit_import` covers directly
+  imported `LimitExceeded`.
+- `std-requirements/http/positive/stream_error_limit_variant` covers qualified
+  `StreamError.LimitExceeded`.
+
+Package-local runtime execution of the public source handler is partially
+covered before transport: `packages/edk-http/src/edk/http/package_smoke.es`
+executes public `edk.http.request` with an unsupported method and observes
+`HttpError.invalid_method` through the source handler path. The deterministic
+constructor and direct preflight-helper smoke remain runnable.
+`check_loopback_runtime_contract` contains a real loopback get/post/body-limit
+and malformed-response runtime probe with no mock response fallback. It is
+paired with `std-requirements/http/loopback_server.py`, a local HTTP/1.1 server
+fixture for `/hello`, `/echo`, `/large`, and `/malformed`. Running without
+`--allow-net` fails closed with `TCP host adapter is not configured`; running
+with explicit `--allow-effects --allow-net 127.0.0.1:<port>` reaches the server
+and returns `0`. EDK must not replace the explicit source handler with metadata
+fallback or an inline fake handler.
+
+Required support:
+
+- configured TCP/TLS/stream host adapters for broader runtime execution of
+  source handlers whose checked effect summaries preserve bottom
+  `Tcp/Stream/Tls` actions;
+- transport trace/effect summaries that preserve `Net.tcp_connect`,
+  `Tls.handshake`, `Stream.write`, `Stream.flush`, `Stream.read`, and
+  `Stream.close`;
+- package metadata for reusable policy templates over method/host values;
+
+Why private host binding or fallback is forbidden:
+
+A private HTTP host client would hide method/host authority, lower-level network
+facts, timeout/body-limit behavior, and replay semantics. A production mock or
+empty response fallback would make runtime behavior look successful while
+skipping the checked action and substrate facts that policy must see.
+
+Regression coverage:
+
+- `tests/fixtures/negative/edk_http_private_host_client_forbidden` keeps a
+  high-level `std.http.request` host client unresolved;
+- `tests/fixtures/negative/edk_http_empty_handler_forbidden` keeps empty
+  `handler {}` values from satisfying `EdkHttp.request`;
+- `tests/fixtures/negative/edk_http_unhandled_action_no_handler` keeps direct
+  `perform EdkHttp.request(...)` unhandled at runtime when callers do not supply
+  an explicit handler;
+- `edk.http.transport` and `edk.http.package_api_contract` keep the
+  package-local bottom action summary explicit: `Net.tcp_connect`,
+  `Tls.handshake`, `Stream.write`, `Stream.flush`, `Stream.read`, and
+  `Stream.close`; checked-HIR execution reports
+  `requires-orchestration[host=Tcp, Stream, Tls]`, so this is not a local
+  no-action network execution path;
+- `std-requirements/http/negative/unhandled_action_no_handler` repeats that
+  check against the real `edk_http` package and expects
+  `analysis::UnhandledEffectAction`;
+- package-private visibility remains missing: `edk.http.api` needs to call
+  `edk.http.transport.execute_request` across modules, which currently requires
+  `public`; the old external negative fixture was removed rather than kept as a
+  fake gate;
+- `std-requirements/http/positive/stream_error_limit_variant` keeps qualified
+  `StreamError.LimitExceeded` source visibility and runtime matching covered.

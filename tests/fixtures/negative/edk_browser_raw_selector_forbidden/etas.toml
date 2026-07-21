@@ -1,0 +1,19 @@
+[package]
+name = "edk-browser-raw-selector-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving raw strings cannot stand in for parsed browser selectors"
+repository = "https://example.invalid/etas-edk-fixtures/edk-browser-raw-selector-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_browser = { path = "../../../../packages/edk-browser", import = "edk.browser" }
+
+[[bin]]
+name = "edk-browser-raw-selector-forbidden"
+module = "tests.edk.negative.edk_browser_raw_selector_forbidden.main"
+flow = "main"

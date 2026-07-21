@@ -1,0 +1,19 @@
+[package]
+name = "edk-http-public-url-safety"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive fixture proving PublicHttpUrl is produced by checked parsing before HTTP APIs"
+repository = "https://example.invalid/etas-edk-fixtures/edk-http-public-url-safety"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "edk-http-public-url-safety"
+module = "tests.edk.http_public_url_safety.main"
+flow = "main"

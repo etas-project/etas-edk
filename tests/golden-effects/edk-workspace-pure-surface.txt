@@ -1,0 +1,28 @@
+The `edk_workspace_pure_surface` fixture covers pure workspace helper modules:
+
+- path joining and path escape rejection for absolute, parent-segment,
+  backslash, drive-style, and CR/LF/tab control-character path forms;
+- path normalization for `.` segments and repeated slash separators;
+- segment-aware glob and path-scope matching, including single-segment `*`,
+  recursive `**`, negative nested-path, and prefix-collision cases such as
+  `src/nested/main.es`, `other/src/main.es`, and `src-old/main.es` not
+  matching `src/*.es` or `src/`;
+- conservative non-matching for unsupported multi-wildcard path segments such
+  as `src/a*b*c.es`, so policy scopes are not widened by partial glob support;
+- escaped scope/glob rejection for absolute, parent-segment, and
+  control-character patterns before matching is attempted;
+- write option builders;
+- snapshot and diff constructors;
+- deterministic filesystem fixture constructors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+
+Package-mode `pkg update`, `pkg lock`, `check`, and `run` currently return
+successfully for this fixture.
+
+This fixture intentionally does not call `edk.workspace.files.read`,
+`edk.workspace.files.write`, `edk.workspace.files.list`, or
+`edk.workspace.tools.files.*`, because those expose runtime-mediated
+`EdkWorkspace.*` actions and require a public filesystem substrate. That action
+boundary is covered separately by `edk-workspace-files.txt`.

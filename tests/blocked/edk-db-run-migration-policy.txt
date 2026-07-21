@@ -1,0 +1,24 @@
+`edk-db.run_migration` is intentionally not implemented in this slice.
+
+Required architecture behavior:
+
+- execute mutation SQL through `EdkDb.exec`;
+- require explicit high-impact migration policy before execution;
+- preserve datasource-scoped action metadata;
+- produce replay/audit evidence for schema/data-changing operations.
+
+Current blockers:
+
+- package-defined action scope metadata cannot yet publish datasource scopes for
+  `EdkDb.exec`;
+- scoped before/after/approval policy templates are blocked by current policy
+  metadata support;
+- package-mode effect replay still cannot attach migration replay/audit
+  semantics to datasource-scoped package actions.
+
+Decision:
+
+Keep `explain_query` available. Keep `query_readonly` unpublished until its
+typed-error readonly guard is implemented. Do not publish
+`run_migration` as a bare `exec` wrapper, and do not implement approval inside
+the flow as ordinary control flow.

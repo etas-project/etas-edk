@@ -1,0 +1,17 @@
+edk-email approval policy templates are blocked until package-defined action
+scope metadata can represent `EdkEmail.send` and policy metadata can
+publish package policy templates against those scoped actions.
+
+Required architecture behavior:
+
+- sending mail is high impact;
+- suggested package policy templates require `Approval.request` before
+  `EdkEmail.send`;
+- tests prove the policy denies or pauses send without approval.
+
+Rejected workaround:
+
+Do not publish an unscoped policy that treats all email accounts as one
+authority, and do not implement approval inside `send` as ordinary control flow.
+Approval requirements belong in policy/action metadata, not a package-private
+delivery handler.

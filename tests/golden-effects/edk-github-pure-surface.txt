@@ -1,0 +1,41 @@
+The `edk_github_pure_surface` fixture covers deterministic GitHub helper
+modules only:
+
+- repository and token-reference constructors with conservative repo/API-host
+  and path validation, rejecting absolute paths, `..` segments, backslashes,
+  colon-style path tokens, spaces, query/fragment markers, `@`, unsafe API
+  hosts, empty host labels, leading/trailing host dots, double dots,
+  leading/trailing hyphen host labels, tabs/control characters, and line
+  breaks;
+- issue draft labels and idempotency keys with unsafe title/label/key rejection,
+  including tab/control characters;
+- pull request and review comment constructors with reference/path validation,
+  including empty ref components, leading/trailing slashes, dot-prefixed
+  components, trailing dots, `.lock` components, reflog syntax,
+  wildcard/revision characters, tab/control characters, and parent-like `..`;
+- REST request planning for issue creation, PR comments, and PR reads;
+- webhook signature header shape validation, including tab/control rejection;
+- deterministic mock issue/comment/result constructors.
+
+Expected EDK authority actions: none.
+Expected std authority actions: none.
+Expected checked errors: none.
+
+Package-mode `pkg update`, `pkg lock`, `check`, and `run` currently return
+successfully for this fixture.
+
+This fixture intentionally does not call `edk.github.issue.create_issue`,
+`edk.github.pr.comment_pr`, `edk.github.pr.get_pr`,
+`edk.github.repo.read`, or `edk.github.tools.*`, because those expose
+runtime-mediated `EdkGitHub.*` actions plus `Secret.read` and require
+GitHub/HTTP/secret handlers. Token reads must remain visible through
+`Secret.read`; they must not be replaced by public string-token arguments or
+hidden HTTP handler reads.
+
+`edk.github.pure.webhook_verify.verify_signature_header` is not cryptographic
+verification. Full HMAC verification remains blocked in
+`tests/blocked/edk-github-webhook-hmac.txt`.
+
+`IssueDraft.idempotency_key` is source-level data only. Action-level
+replay/idempotency metadata for GitHub issue/comment writes remains blocked in
+`tests/blocked/edk-github-replay-metadata.txt`.

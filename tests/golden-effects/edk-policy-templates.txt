@@ -1,0 +1,19 @@
+Policy template baseline.
+
+Legacy `policy { allow ... }` / `policy { deny ... }` source modules have been
+removed from EDK packages and std-requirements fixtures. EDK must not keep
+source-local policy files as a compatibility placeholder while the SPEC moves
+to monitor/check metadata.
+
+Blocked policy surface:
+
+- reusable HTTP request templates such as `HttpReadOnly`, `HttpAllowHosts`,
+  `HttpDenyMutations`, `HttpNoPrivateNetwork`, `HttpRequireTimeout`, and
+  `HttpBoundedBody`;
+- reusable approval-before-send templates for email;
+- reusable before/after/check templates for DB, workspace, browser, GitHub,
+  vector, document, PDF, eval, and web actions.
+
+These require package-defined action metadata and payload-aware monitor/check
+support. EDK must not publish broad unscoped templates, private host bindings,
+or empty handlers as a substitute.

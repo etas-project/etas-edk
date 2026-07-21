@@ -1,0 +1,45 @@
+Default Handler Layout Status
+
+The architected source layouts include `handlers/default.es` and, for some
+packages, alternate handlers such as `handlers/dry_run.es`,
+`handlers/recording.es`, `handlers/mock_embed.es`, `handlers/read_only.es`,
+or `handlers/draft_only.es`.
+
+These files are intentionally not present in the current source tree unless a
+real Etas implementation over public lower-level APIs exists. The design rule
+in `docs/architect/package-implementation-design.md` requires default handlers
+to be ordinary Etas implementations over lower-level EDK packages or public
+`std` substrate. Publishing empty files, fake responses, package-private host
+bindings, or broad unscoped dry-run behavior would hide authority boundaries
+and would violate the EDK architecture.
+
+Blocked handler families:
+
+- network handlers for `edk-web`, `edk-email`, `edk-browser`, and `edk-github`
+  are blocked by missing WebSocket, browser protocol, secret-mediated, or other
+  package-specific public substrate;
+- filesystem-backed handlers for `edk-workspace`, `edk-git`, `edk-pdf`,
+  `edk-docs`, and `edk-eval` are blocked by missing public project-root scoped
+  filesystem substrate;
+- database/vector handlers are blocked unless they can be written over public
+  EDK actions or package metadata can preserve datasource/store-scoped action
+  facts;
+- alternate dry-run/recording/mock handlers may be added only when their
+  semantics are explicit test handlers and they do not register as production
+  defaults.
+
+`edk-http` is no longer part of this generic missing-substrate blocker: it has a
+real source default handler over public TCP/TLS/Stream/HTTP codec APIs. Its
+remaining runtime blockers are tracked specifically in
+`tests/blocked/edk-http-default-handler-substrate.txt`.
+
+Required before unblocking the remaining families:
+
+- public low-level substrate actions with policy-visible scope metadata;
+- package metadata for exported handler mappings;
+- golden traces proving handler order and action facts;
+- no package-private host binding path.
+
+This is not permission to skip the handlers permanently. It records that the
+current correct implementation is to leave production default handlers pending
+instead of writing fallback code.

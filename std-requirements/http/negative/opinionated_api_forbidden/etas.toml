@@ -1,0 +1,19 @@
+[package]
+name = "std-req-http-opinionated-api-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative std requirements probe forbidding opinionated EDK HTTP shortcuts"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-opinionated-api-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "std-req-http-opinionated-api-forbidden"
+module = "std_requirements.http.negative.opinionated_api_forbidden.main"
+flow = "main"

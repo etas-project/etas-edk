@@ -1,0 +1,18 @@
+[package]
+name = "std-req-http-private-host-binding-forbidden"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative std requirements probe forbidding private high-level HTTP host client"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-private-host-binding-forbidden"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "std-req-http-private-host-binding-forbidden"
+module = "std_requirements.http.negative.private_host_binding_forbidden.main"
+flow = "main"

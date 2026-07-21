@@ -1,0 +1,40 @@
+The cross-package matrix fixture is intentionally present. Package materializing
+and checking now work, but runtime execution is blocked because the fixture
+requests real EDK actions.
+
+Fixture:
+
+`tests/fixtures/positive/edk_cross_package_matrix`
+
+Covered scenarios:
+
+- research assistant: `edk-web`, `edk-vector`, `edk-docs`, `edk-email`;
+- report publisher: `edk-web`, `edk-workspace`, `edk-email`;
+- PR reviewer: `edk-git`, `edk-github`, `edk-workspace`;
+- PDF ingestion: `edk-workspace`, `edk-pdf`, `edk-vector`;
+- browser capture: `edk-browser`, `edk-docs`, `edk-workspace`;
+- workflow planning: `edk-algorithm`, `edk-workspace`, `edk-github`;
+- evaluation run: `edk-eval` plus package-under-test result storage.
+
+Current blocker:
+
+The fixture requests package-owned actions across web, vector, email, workspace,
+Git/GitHub, browser, PDF, and eval packages. `etas run .` must fail closed
+without real host services and handlers.
+
+Observed command:
+
+`etas run .` from
+`tests/fixtures/positive/edk_cross_package_matrix`
+
+Observed result:
+
+The command fails with `analysis::MissingHostHandler` for `Network` on the
+default `matrix-research-assistant` bin before any fake response can be used.
+`etas pkg update .`, `etas pkg lock .`, and `etas check .` all succeed.
+
+Decision:
+
+Keep the fixture source and manifests as the intended integration coverage.
+Do not inline package source, remove path dependencies, hand-write metadata, or
+add fake host handlers/responses to force a green package-mode run.

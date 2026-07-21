@@ -1,0 +1,18 @@
+[package]
+name = "runtime-action-scope-value-forbidden-negative"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative fixture proving runtime values are forbidden in action type arguments"
+repository = "https://example.invalid/etas-edk-fixtures/runtime-action-scope-value-forbidden-negative"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "runtime-action-scope-value-forbidden-negative"
+module = "tests.edk.negative.runtime_action_scope_value_forbidden.main"
+flow = "main"

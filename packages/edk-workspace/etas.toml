@@ -1,0 +1,18 @@
+[package]
+name = "edk-workspace"
+version = "0.1.0"
+edition = "2026"
+license = "MIT OR Apache-2.0"
+description = "Official EDK workspace package skeleton"
+repository = "https://github.com/etas-project/etas-edk"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+
+[[bin]]
+name = "edk-workspace-smoke"
+module = "edk.workspace.package_smoke"
+flow = "main"

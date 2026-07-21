@@ -1,0 +1,38 @@
+The edk-tool-mock-surface fixture now reaches the package-mode runtime
+boundary:
+
+- `etas pkg update .` succeeds.
+- `etas pkg lock .` succeeds.
+- `etas check .` succeeds.
+- `etas run .` fails because imported pure `tool` aliases are not exposed as
+  callable runtime values.
+
+Fixture dependency surface:
+
+- edk-http tool and mock modules;
+- edk-workspace tool and mock modules;
+- edk-db tool and mock modules;
+- edk-vector tool and mock modules;
+- edk-browser tool and mock modules;
+- edk-git tool and mock modules;
+- edk-email tool and mock modules;
+- edk-github tool and mock modules;
+- edk-docs tool and mock modules;
+- edk-pdf tool and mock modules;
+- edk-eval tool and mock modules.
+
+Current runtime blocker:
+
+`tests/fixtures/positive/edk_tool_mock_surface/src/tests/edk/tool_mock_surface/http_db/main.es`
+calls the imported pure tool alias `explain_query(readonly_query)`. Checking
+resolves the alias, but `etas run .` reports:
+
+`import alias does not name a runtime value`
+
+Do not hand-write local helper copies, rewrite the fixture to avoid imported
+tools, or add fake action handlers to make this pass. The next fix belongs in
+the package/interpreter tool-call runtime boundary.
+
+The fixture remains valuable as source-level AST coverage for the newly added
+tool/mock surface and as a package-mode integration gate for imported tool
+runtime semantics.
