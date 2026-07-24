@@ -7,12 +7,10 @@ import edk.http.types.{BodyLimit, HeaderSpec, Headers, HttpRequest, HttpResponse
 flow lower_headers(headers: Headers) -> Array<HttpActionHeader> ![] {
     var entries: Array<HttpActionHeader> = [];
     for header in headers.entries limit Iterations(65536) {
-        entries = entries + [
-            HttpActionHeader {
-                name = header.name.value,
-                value = header.value.value,
-            },
-        ];
+        entries = entries.push(HttpActionHeader {
+            name = header.name.value,
+            value = header.value.value,
+        });
     }
     return entries;
 }
@@ -20,12 +18,10 @@ flow lower_headers(headers: Headers) -> Array<HttpActionHeader> ![] {
 flow raise_headers(headers: Array<HttpActionHeader>) -> Headers ![] {
     var entries: Array<HeaderSpec<UserHeaderName>> = [];
     for header in headers limit Iterations(65536) {
-        entries = entries + [
-            HeaderSpec<UserHeaderName> {
-                name = user_header_name_evidence(header.name),
-                value = header_value_evidence(header.value),
-            },
-        ];
+        entries = entries.push(HeaderSpec<UserHeaderName> {
+            name = user_header_name_evidence(header.name),
+            value = header_value_evidence(header.value),
+        });
     }
     return Headers { entries = entries };
 }
@@ -33,12 +29,10 @@ flow raise_headers(headers: Array<HttpActionHeader>) -> Headers ![] {
 flow lower_response_headers(headers: ResponseHeaders) -> Array<HttpActionHeader> ![] {
     var entries: Array<HttpActionHeader> = [];
     for header in headers.entries limit Iterations(65536) {
-        entries = entries + [
-            HttpActionHeader {
-                name = header.name,
-                value = header.value,
-            },
-        ];
+        entries = entries.push(HttpActionHeader {
+            name = header.name,
+            value = header.value,
+        });
     }
     return entries;
 }
@@ -46,12 +40,10 @@ flow lower_response_headers(headers: ResponseHeaders) -> Array<HttpActionHeader>
 flow raise_response_headers(headers: Array<HttpActionHeader>) -> ResponseHeaders ![] {
     var entries: Array<ResponseHeader> = [];
     for header in headers limit Iterations(65536) {
-        entries = entries + [
-            ResponseHeader {
-                name = header.name,
-                value = header.value,
-            },
-        ];
+        entries = entries.push(ResponseHeader {
+            name = header.name,
+            value = header.value,
+        });
     }
     return ResponseHeaders { entries = entries };
 }

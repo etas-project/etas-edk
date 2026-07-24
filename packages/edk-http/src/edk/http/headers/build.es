@@ -96,7 +96,7 @@ public flow find(headers: Headers, name: string) -> HeaderLookup ![] {
 public flow find_response(headers: ResponseHeaders, name: string) -> HeaderLookup ![] {
     let wanted = lowercase(trim(name));
     for item in headers.entries limit Iterations(65536) {
-        if item.name == wanted {
+        if lowercase(trim(item.name)) == wanted {
             return HeaderLookup { found = true, value = item.value };
         }
     }
