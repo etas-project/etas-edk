@@ -421,15 +421,13 @@ EDK already contains 13 packages, more than 200 `.es` source files, and roughly
     `std.http.codec`. `edk-http/src/edk/http/wire/lower_request.es` and
     `wire/decode_response.es` provide explicit lowering and decoding functions,
     and the `HttpWire*` naming matches SPEC section 17, subsection 6.
-- The remaining discrepancy is that `RequestBody` contains both `raw: bytes`
-  and `text: string` fields in `types.es:64-69`. The SPEC does not prohibit this,
-  and section 17, subsection 7 says response bytes are returned through
-  `ResponseBody.raw`, while package-local helpers decode bytes into text with
-  `Replace`. However, the SPEC also notes that
-  `edk.http.body.bytes` and `edk.http.body.response_bytes` currently carry
-  encoded byte text in shared `RequestBody`/`ResponseBody` shapes and are not a
-  substitute for public byte/text codec substrate. This is an acknowledged
-  substrate-gap placeholder rather than final SPEC design.
+- The remaining discrepancy is that request and response body records retain
+  compatibility text fields alongside `raw: bytes`. Request text and
+  `length_bytes` are informational; request framing and limits use raw bytes.
+  `ResponseBody.raw` is authoritative, while package-created response bodies
+  populate `text` with `Replace` decoding and explicit strict/lossy helpers
+  decode `raw`. These compatibility fields are not a substitute for public
+  byte/text codec substrate.
 
 ---
 

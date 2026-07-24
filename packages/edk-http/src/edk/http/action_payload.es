@@ -1,8 +1,16 @@
 module edk.http.action_payload;
 
+import std.codec.text.{Replace, utf8_decode};
 import edk.http.pure.method.http_method_value;
 import edk.http.policy.{HttpActionHeader, HttpActionRequest, HttpActionResponse};
 import edk.http.types.{BodyLimit, HeaderSpec, Headers, HttpRequest, HttpResponse, RedirectPolicy, RequestBody, ResponseBody, ResponseHeader, ResponseHeaders, RetryPolicy, Timeout, Url, UserHeaderName, header_value_evidence, http_method_evidence, user_header_name_evidence};
+
+flow lossy_text(raw: bytes) -> string ![] {
+    return match utf8_decode(raw, Replace) {
+        Ok(value) => value,
+        Err(_) => "",
+    };
+}
 
 flow lower_headers(headers: Headers) -> Array<HttpActionHeader> ![] {
     var entries: Array<HttpActionHeader> = [];
@@ -104,7 +112,7 @@ public flow lower_response(response: HttpResponse) -> HttpActionResponse ![] {
         headers = lower_response_headers(response.headers),
         body_media_type = response.body.media_type,
         body_raw = response.body.raw,
-        body_text = response.body.text,
+        body_text = lossy_text(response.body.raw),
     };
 }
 
@@ -115,7 +123,7 @@ public flow raise_response(response: HttpActionResponse) -> HttpResponse ![] {
         body = ResponseBody {
             media_type = response.body_media_type,
             raw = response.body_raw,
-            text = response.body_text,
+            text = lossy_text(response.body_raw),
         },
     };
 }

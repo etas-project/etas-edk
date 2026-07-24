@@ -29,15 +29,17 @@ used with `std.stream.write_all/flush/read_until_limit/close`, and source can
 construct `HttpWireRequest` values with `version`, `List<HttpHeader>`, a
 checked `Host` header, and a `bytes` body from `std.codec.text.utf8_encode`.
 EDK HTTP now injects host authority, stores request bodies as raw `bytes`, and
-lowers non-empty request bodies in checked source. The transport also returns
-decoded response body bytes as `ResponseBody.raw`. `std.codec.text.Strict`,
+derives request limits and method-specific `Content-Length` from those bytes.
+The transport also returns response body bytes as authoritative
+`ResponseBody.raw` independently of UTF-8 validity. `std.codec.text.Strict`,
 `Replace`, `InvalidUtf8`, `std.codec.text.utf8_decode`,
 `std.http.codec.MalformedMessage`, `std.http.codec.decode_response`,
 `std.bytes.len`, and `std.result.is_ok/is_err` are now runtime-callable in the
-HTTP requirements probes. EDK raw byte request helpers compute
-`RequestBody.length_bytes` from `std.bytes.len(raw)`, and response helpers
-decode raw bytes with `Replace` while the checked transport path uses `Strict`
-and maps `InvalidUtf8` to `HttpError`.
+HTTP requirements probes. EDK request helpers populate informational
+`RequestBody.length_bytes`, while execution recomputes `std.bytes.len(raw)`.
+Response compatibility text uses `Replace`; explicit strict decoding maps
+`InvalidUtf8` to `HttpError` without discarding a successfully received raw
+response.
 
 `std.stream.StreamError.LimitExceeded` is now source-visible as a qualified
 value path. Both the direct import fixture and the qualified-path fixture run,

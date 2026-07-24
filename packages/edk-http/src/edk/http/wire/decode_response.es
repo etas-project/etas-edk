@@ -1,8 +1,9 @@
 module edk.http.wire.decode_response;
 
-import std.codec.text.{InvalidUtf8, Replace, Strict, utf8_decode, utf8_encode};
+import std.codec.text.{Replace, utf8_decode, utf8_encode};
 import std.http.codec.{HttpHeader, HttpWireResponse, HttpWireResponseHead};
-import edk.http.errors.{HttpError, codec_error};
+import std.text.{lowercase, trim};
+import edk.http.errors.HttpError;
 import edk.http.pure.status.is_valid_status;
 import edk.http.types.{DecodedResponse, HttpResponse, ResponseBody, ResponseHeader, ResponseHeaders};
 
@@ -31,19 +32,6 @@ flow raw_response_body(media_type: string, raw: bytes) -> ResponseBody ![] {
     };
 }
 
-flow strict_response_body(media_type: string, raw: bytes) -> Result<ResponseBody, HttpError> ![]
-{
-    return match utf8_decode(raw, Strict) {
-        Ok(text) => Ok(ResponseBody {
-            media_type = media_type,
-            raw = raw,
-            text = text,
-        }),
-        Err(InvalidUtf8) => Err(codec_error("HTTP response body is not valid UTF-8")),
-        Err(_) => Err(codec_error("HTTP response body text decoding failed")),
-    };
-}
-
 flow response_headers(head: HttpWireResponseHead) -> ResponseHeaders ![] {
     var entries: Array<ResponseHeader> = [];
     for header in head.headers limit Iterations(65536) {
@@ -57,7 +45,7 @@ flow response_headers(head: HttpWireResponseHead) -> ResponseHeaders ![] {
 
 flow response_media_type(headers: ResponseHeaders) -> string ![] {
     for header in headers.entries limit Iterations(65536) {
-        if header.name == "content-type" {
+        if lowercase(trim(header.name)) == "content-type" {
             return header.value;
         }
     }
@@ -91,15 +79,7 @@ public flow http_response_from_wire_bytes(response: HttpWireResponse) -> HttpRes
 }
 
 public flow http_response_from_wire_bytes_checked(response: HttpWireResponse) -> Result<HttpResponse, HttpError> ![] {
-    let headers = response_headers(response.head);
-    return match strict_response_body(response_media_type(headers), response.body) {
-        Ok(body) => Ok(HttpResponse {
-            status = response.head.status,
-            headers = headers,
-            body = body,
-        }),
-        Err(error) => Err(error),
-    };
+    return Ok(http_response_from_wire_bytes(response));
 }
 
 public flow decode_response(status: i32, media_type: string, body: string) -> DecodedResponse ![] {

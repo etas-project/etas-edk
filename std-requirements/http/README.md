@@ -114,5 +114,12 @@ Still blocked outside these fixtures:
   HTTP/1.1 server fixture for `/hello`, `/echo`, `/large`, and `/malformed`.
   Without `--allow-net` it fails closed with `TCP host adapter is not
   configured`; with explicit `--allow-effects --allow-net 127.0.0.1:<port>`
-  the loopback contract returns `0`. `verify.sh` keeps the authorized runtime
-  check opt-in via `ETAS_HTTP_RUN_LOOPBACK=1`;
+   the loopback contract returns `0`. `verify.sh` keeps the authorized runtime
+   check opt-in via `ETAS_HTTP_RUN_LOOPBACK=1`;
+- pre-incremental-framing Phase 1 pure contracts run in the default `edk-http`
+  smoke and cover request byte length, forged metadata, method-specific
+  `Content-Length`, `Content-Type`, and response compatibility. Run
+  `ETAS_HTTP_RUN_PHASE1=1 sh verify.sh` to additionally execute the authorized
+  invalid UTF-8 and NUL-containing loopback response contracts. The binary
+  routes use connection-close responses and do not implement or test
+  package-local incremental framing.

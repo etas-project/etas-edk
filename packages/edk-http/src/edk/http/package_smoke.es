@@ -1,14 +1,16 @@
 module edk.http.package_smoke;
 
+import std.bytes.len as bytes_len;
 import std.codec.text.utf8_encode;
 import std.http.codec.{HttpHeader, HttpWireResponse, HttpWireResponseHead, encode_request as encode_wire_request};
-import std.text.join;
+import std.text.{lowercase, parse_i32, trim};
 import edk.http.{delete as http_delete, get, head, patch, post, put};
-import edk.http.body.{bytes, response_bytes, response_text as body_response_text, text};
+import edk.http.action_payload.{lower_request as lower_action_request, lower_response as lower_action_response, raise_request as raise_action_request, raise_response as raise_action_response};
+import edk.http.body.{bytes, decode_text_lossy, decode_text_strict, response_bytes, response_text as body_response_text, text};
 import edk.http.client.new;
 import edk.http.client.defaults.{apply_client_config, default_config, default_options, default_request, no_redirects, normalize_request, request_with_body_options, request_with_options, timeout_millis, with_body_limit, with_checked_header, with_redirect_policy, with_timeout};
 import edk.http.errors.{HttpError, codec_error, network_transport_error, response_body_limit_error, response_body_read_error, stream_transport_error, tls_transport_error};
-import edk.http.headers.{can_user_set_header, count, find, find_response, is_managed_header_name, is_valid_header_name, is_valid_header_value, single_checked};
+import edk.http.headers.{can_user_set_header, count, find, find_response, is_managed_header_name, is_valid_header_name, is_valid_header_value, set, single_checked};
 import edk.http.handlers.preflight.preflight_request;
 import edk.http.mocks.routes.{match_route, route};
 import edk.http.mocks.server.response as mock_response;
@@ -18,7 +20,9 @@ import edk.http.pure.status.{is_client_error_status, is_redirect_status, is_succ
 import edk.http.url.{https, is_private_or_reserved_host, is_valid_host, is_valid_path_and_query, is_valid_port, normalize_path, parse_public_url};
 import edk.http.url.parse.parse_url;
 import edk.http.url.scope.request_scope;
-import edk.http.types.{BodyLimit, Header, HeaderSpec, Headers, HttpClientConfig, HttpMethod, HttpRequest, PublicHttpUrl, RedirectPolicy, RequestBody, RequestOptions, RetryPolicy, Timeout, Url, UserHeaderName, header_value_evidence, http_method_evidence, user_header_name_evidence};
+import edk.http.policy.HttpActionResponse;
+import edk.http.transport.execute_request;
+import edk.http.types.{BodyLimit, Header, HeaderSpec, Headers, HttpClientConfig, HttpMethod, HttpRequest, HttpResponse, PublicHttpUrl, RedirectPolicy, RequestBody, RequestOptions, ResponseBody, ResponseHeader, ResponseHeaders, RetryPolicy, Timeout, Url, UserHeaderName, header_value_evidence, http_method_evidence, user_header_name_evidence};
 import edk.http.wire.body_limit.is_request_body_within_limit;
 import edk.http.wire.decode_response.{http_response_from_wire_bytes, http_response_from_wire_head, response_from_text, response_from_wire_head};
 import edk.http.wire.lower_request.{encode_request, lower_wire_request};
@@ -31,6 +35,27 @@ flow count_wire_header(headers: List<HttpHeader>, name: string) -> i32 ![] {
         }
     }
     return total;
+}
+
+flow count_wire_header_ci(headers: List<HttpHeader>, name: string) -> i32 ![] {
+    let wanted = lowercase(trim(name));
+    var total = 0;
+    for item in headers limit Iterations(65536) {
+        if lowercase(trim(item.name)) == wanted {
+            total = total + 1;
+        }
+    }
+    return total;
+}
+
+flow wire_header_value_ci(headers: List<HttpHeader>, name: string) -> string ![] {
+    let wanted = lowercase(trim(name));
+    for item in headers limit Iterations(65536) {
+        if lowercase(trim(item.name)) == wanted {
+            return item.value;
+        }
+    }
+    return "";
 }
 
 flow must_headers(result: Result<Headers, HttpError>) -> Headers ![Error<HttpError>] {
@@ -356,8 +381,31 @@ flow check_public_body_limit_error_contract(args: Array<string>) -> i32 ![Error<
     return check_public_preflight_error_kind(request, "body_limit");
 }
 
-flow loopback_url(port: string, path: string) -> string ![] {
-    return join(["http://127.0.0.1:", port, path], "");
+flow loopback_request(port: string, path: string) -> HttpRequest ![Error<HttpError>] {
+    let parsed_port = match parse_i32(port) {
+        Ok(value) => value,
+        Err(_) => {
+            return perform Error<HttpError>.raise(HttpError { kind = "invalid_url", message = "invalid loopback port" });
+        }
+    };
+    return raw_default_request(
+        get_method(),
+        Url { scheme = "http", host = "127.0.0.1", port = parsed_port, path_and_query = path },
+    );
+}
+
+flow loopback_request_with_body(port: string, path: string, body: RequestBody) -> HttpRequest ![Error<HttpError>] {
+    let base = loopback_request(port, path);
+    return HttpRequest {
+        method = post_method(),
+        url = base.url,
+        headers = base.headers,
+        body = body,
+        timeout = base.timeout,
+        body_limit = base.body_limit,
+        retry = base.retry,
+        redirect = base.redirect,
+    };
 }
 
 flow loopback_limit_options() -> RequestOptions ![] {
@@ -370,9 +418,9 @@ flow loopback_limit_options() -> RequestOptions ![] {
     };
 }
 
-flow loopback_get_error_kind(url: string, options: RequestOptions) -> string ![] {
+flow loopback_get_error_kind(request: HttpRequest) -> string ![] {
     return handle {
-        let response = get(url, options);
+        let response = execute_request(request.method, request.url.host, request);
         "unexpected"
     } with {
         Error<HttpError>.raise(err) => {
@@ -381,11 +429,12 @@ flow loopback_get_error_kind(url: string, options: RequestOptions) -> string ![]
     };
 }
 
-flow check_loopback_runtime_contract(args: Array<string>) -> i32 ![Error<IndexError>] {
+flow check_loopback_runtime_contract(args: Array<string>) -> i32 ![Error<IndexError>, Error<HttpError>] {
     let port = args[0];
     let hello_check = handle {
         var failed = 0;
-        let hello = get(loopback_url(port, "/hello"), default_options());
+        let hello_request = loopback_request(port, "/hello");
+        let hello = execute_request(hello_request.method, hello_request.url.host, hello_request);
         if hello.status != 200 { failed = 1; }
         if hello.body.text != "hello" { failed = 1; }
         let marker = find_response(hello.headers, "x-edk-loopback");
@@ -401,7 +450,8 @@ flow check_loopback_runtime_contract(args: Array<string>) -> i32 ![Error<IndexEr
 
     let post_check = handle {
         var failed = 0;
-        let echoed = post(loopback_url(port, "/echo"), text("text/plain", "payload"), default_options());
+        let echo_request = loopback_request_with_body(port, "/echo", text("text/plain", "payload"));
+        let echoed = execute_request(echo_request.method, echo_request.url.host, echo_request);
         if echoed.status != 200 { failed = 1; }
         if echoed.body.text != "POST:payload" { failed = 1; }
         failed
@@ -412,11 +462,253 @@ flow check_loopback_runtime_contract(args: Array<string>) -> i32 ![Error<IndexEr
     };
     if post_check != 0 { return 1; }
 
-    let limit_kind = loopback_get_error_kind(loopback_url(port, "/large"), loopback_limit_options());
+    let limit_base = loopback_request(port, "/large");
+    let limit_options = loopback_limit_options();
+    let limit_request = HttpRequest {
+        method = limit_base.method,
+        url = limit_base.url,
+        headers = limit_base.headers,
+        body = limit_base.body,
+        timeout = limit_options.timeout,
+        body_limit = limit_options.body_limit,
+        retry = limit_options.retry,
+        redirect = limit_options.redirect,
+    };
+    let limit_kind = loopback_get_error_kind(limit_request);
     if limit_kind != "response_body_limit" { return 1; }
-    let malformed_kind = loopback_get_error_kind(loopback_url(port, "/malformed"), default_options());
+    let malformed_kind = loopback_get_error_kind(loopback_request(port, "/malformed"));
     if malformed_kind != "codec" { return 1; }
     return 0;
+}
+
+flow request_with_body(method: HttpMethod, target: PublicHttpUrl, body: RequestBody) -> HttpRequest ![] {
+    let base = default_request(method, target);
+    return HttpRequest {
+        method = method,
+        url = target,
+        headers = base.headers,
+        body = body,
+        timeout = base.timeout,
+        body_limit = base.body_limit,
+        retry = base.retry,
+        redirect = base.redirect,
+    };
+}
+
+flow request_with_headers_and_body(method: HttpMethod, target: PublicHttpUrl, headers: Headers, body: RequestBody) -> HttpRequest ![] {
+    let base = request_with_body(method, target, body);
+    return HttpRequest {
+        method = base.method,
+        url = base.url,
+        headers = headers,
+        body = base.body,
+        timeout = base.timeout,
+        body_limit = base.body_limit,
+        retry = base.retry,
+        redirect = base.redirect,
+    };
+}
+
+// Phase 1 contracts are pure unless explicitly named as loopback targets.
+flow check_phase1_request_lengths_target(args: Array<string>) -> i32 ![Error<HttpError>] {
+    let target = must_url(https("example.com", "/length"));
+    let ascii = text("text/plain", "hello");
+    let chinese = text("text/plain; charset=utf-8", "你好");
+    let emoji = text("text/plain; charset=utf-8", "😀");
+    let binary = bytes("application/octet-stream", utf8_encode("abc"));
+
+    if ascii.length_bytes != 5 { return 1; }
+    if chinese.length_bytes != 6 { return 1; }
+    if emoji.length_bytes != 4 { return 1; }
+    if binary.length_bytes != 3 { return 1; }
+    if bytes_len(chinese.raw) != 6 { return 1; }
+    if bytes_len(emoji.raw) != 4 { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(post_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(post_method(), target, chinese)).headers, "content-length") != "6" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(post_method(), target, emoji)).headers, "content-length") != "4" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(post_method(), target, binary)).headers, "content-length") != "3" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(get_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(head_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(delete_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(put_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    if wire_header_value_ci(lower_wire_request(request_with_body(patch_method(), target, ascii)).headers, "content-length") != "5" { return 1; }
+    return 0;
+}
+
+flow check_phase1_forged_length_target(args: Array<string>) -> i32 ![Error<HttpError>] {
+    let target = must_url(https("example.com", "/forged-length"));
+    let base = request_with_body(post_method(), target, RequestBody {
+        media_type = "text/plain",
+        raw = utf8_encode("hello"),
+        text = "hello",
+        length_bytes = 0,
+    });
+    let limited = HttpRequest {
+        method = base.method,
+        url = base.url,
+        headers = base.headers,
+        body = base.body,
+        timeout = base.timeout,
+        body_limit = BodyLimit { max_bytes = 4 },
+        retry = base.retry,
+        redirect = base.redirect,
+    };
+    let round_trip = raise_action_request(lower_action_request(base));
+    if wire_header_value_ci(lower_wire_request(base).headers, "content-length") != "5" { return 1; }
+    if preflight_request(limited.method, limited.url.host, limited).error.kind != "body_limit" { return 1; }
+    if round_trip.body.length_bytes != 0 { return 1; }
+    if wire_header_value_ci(lower_wire_request(round_trip).headers, "content-length") != "5" { return 1; }
+    return 0;
+}
+
+flow check_phase1_empty_content_length_target(args: Array<string>) -> i32 ![Error<HttpError>] {
+    let target = must_url(https("example.com", "/empty"));
+    let empty_body = text("", "");
+    let get_wire = lower_wire_request(request_with_body(get_method(), target, empty_body));
+    let head_wire = lower_wire_request(request_with_body(head_method(), target, empty_body));
+    let delete_wire = lower_wire_request(request_with_body(delete_method(), target, empty_body));
+    let post_wire = lower_wire_request(request_with_body(post_method(), target, empty_body));
+    let put_wire = lower_wire_request(request_with_body(put_method(), target, empty_body));
+    let patch_wire = lower_wire_request(request_with_body(patch_method(), target, empty_body));
+    if count_wire_header_ci(get_wire.headers, "content-length") != 0 { return 1; }
+    if count_wire_header_ci(head_wire.headers, "content-length") != 0 { return 1; }
+    if count_wire_header_ci(delete_wire.headers, "content-length") != 0 { return 1; }
+    if wire_header_value_ci(post_wire.headers, "content-length") != "0" { return 1; }
+    if wire_header_value_ci(put_wire.headers, "content-length") != "0" { return 1; }
+    if wire_header_value_ci(patch_wire.headers, "content-length") != "0" { return 1; }
+    return 0;
+}
+
+flow check_phase1_content_type_target(args: Array<string>) -> i32 ![Error<HttpError>] {
+    let target = must_url(https("example.com", "/content-type"));
+    let automatic = lower_wire_request(request_with_body(post_method(), target, text("application/json", "{}")));
+    let typed_empty = lower_wire_request(request_with_body(post_method(), target, text("application/json", "")));
+    let explicit_headers = Headers { entries = [trusted_header("Content-Type", "application/problem+json")] };
+    let explicit = lower_wire_request(request_with_headers_and_body(post_method(), target, explicit_headers, text("application/json", "{}")));
+    let forged_headers = Headers {
+        entries = [
+            trusted_header("Content-Type", "application/json"),
+            trusted_header("content-type", "text/plain"),
+        ],
+    };
+    let forged = request_with_headers_and_body(post_method(), target, forged_headers, text("application/xml", "<x/>"));
+    let unsafe = request_with_body(post_method(), target, text("text/plain\r\nX-Injected: yes", "x"));
+    let unsafe_control = request_with_body(post_method(), target, text("text/plain\tevil", "x"));
+    let unsafe_nul = request_with_body(post_method(), target, text("text/plain\0evil", "x"));
+    let blank = request_with_body(post_method(), target, text("   ", "x"));
+    let mixed = Headers { entries = [trusted_header("X-Custom", "first")] };
+    let mixed_replaced = set(mixed, trusted_header("x-custom", "second"));
+    let mixed_lookup = find(mixed_replaced, "X-CUSTOM");
+
+    if count_wire_header_ci(automatic.headers, "content-type") != 1 { return 1; }
+    if wire_header_value_ci(automatic.headers, "content-type") != "application/json" { return 1; }
+    if wire_header_value_ci(typed_empty.headers, "content-type") != "application/json" { return 1; }
+    if count_wire_header_ci(explicit.headers, "content-type") != 1 { return 1; }
+    if wire_header_value_ci(explicit.headers, "content-type") != "application/problem+json" { return 1; }
+    if preflight_request(forged.method, forged.url.host, forged).error.kind != "invalid_header" { return 1; }
+    if count_wire_header_ci(lower_wire_request(forged).headers, "content-type") != 1 { return 1; }
+    if preflight_request(unsafe.method, unsafe.url.host, unsafe).error.kind != "invalid_header" { return 1; }
+    if preflight_request(unsafe_control.method, unsafe_control.url.host, unsafe_control).error.kind != "invalid_header" { return 1; }
+    if preflight_request(unsafe_nul.method, unsafe_nul.url.host, unsafe_nul).error.kind != "invalid_header" { return 1; }
+    if preflight_request(blank.method, blank.url.host, blank).error.kind != "invalid_header" { return 1; }
+    if count(mixed_replaced) != 1 { return 1; }
+    if !mixed_lookup.found { return 1; }
+    if mixed_lookup.value != "second" { return 1; }
+    return 0;
+}
+
+flow check_phase1_response_compatibility_target(args: Array<string>) -> i32 ![] {
+    let no_wire_headers: List<HttpHeader> = [];
+    let mixed_case_headers = no_wire_headers.push(HttpHeader { name = "Content-Type", value = "text/plain" });
+    let response = http_response_from_wire_bytes(HttpWireResponse {
+        head = HttpWireResponseHead { version = "HTTP/1.1", status = 200, reason = "OK", headers = mixed_case_headers },
+        body = utf8_encode("raw body"),
+    });
+    let supplied = HttpActionResponse {
+        status = 206,
+        headers = [],
+        body_media_type = "text/plain",
+        body_raw = utf8_encode("raw wins"),
+        body_text = "forged text",
+    };
+    let raised = raise_action_response(supplied);
+    let lowered = lower_action_response(HttpResponse {
+        status = 200,
+        headers = ResponseHeaders { entries = [ResponseHeader { name = "Content-Type", value = "text/plain" }] },
+        body = ResponseBody { media_type = "text/plain", raw = utf8_encode("raw wins"), text = "forged text" },
+    });
+    let strict = decode_text_strict(ResponseBody {
+        media_type = "text/plain",
+        raw = utf8_encode("strict raw"),
+        text = "forged text",
+    });
+    let lossy = decode_text_lossy(ResponseBody {
+        media_type = "text/plain",
+        raw = utf8_encode("lossy raw"),
+        text = "forged text",
+    });
+    let strict_empty = decode_text_strict(ResponseBody {
+        media_type = "text/plain",
+        raw = utf8_encode(""),
+        text = "forged text",
+    });
+
+    if response.body.media_type != "text/plain" { return 1; }
+    if bytes_len(response.body.raw) != 8 { return 1; }
+    if response.body.text != "raw body" { return 1; }
+    if raised.body.text != "raw wins" { return 1; }
+    if lowered.body_text != "raw wins" { return 1; }
+    match strict {
+        Ok(value) => {
+            if value != "strict raw" { return 1; }
+        }
+        Err(_) => { return 1; }
+    }
+    match strict_empty {
+        Ok(value) => {
+            if value != "" { return 1; }
+        }
+        Err(_) => { return 1; }
+    }
+    if lossy != "lossy raw" { return 1; }
+    return 0;
+}
+
+flow check_loopback_binary_response_target(args: Array<string>) -> i32 ![Error<IndexError>] {
+    let port = args[0];
+    return handle {
+        let binary_get = loopback_request(port, "/binary");
+        let response = execute_request(binary_get.method, binary_get.url.host, binary_get);
+        if response.status != 200 { return 1; }
+        if response.body.media_type != "application/octet-stream" { return 1; }
+        if bytes_len(response.body.raw) != 3 { return 1; }
+        let action_round_trip = raise_action_response(lower_action_response(response));
+        if bytes_len(action_round_trip.body.raw) != 3 { return 1; }
+        if action_round_trip.body.text != decode_text_lossy(action_round_trip.body) { return 1; }
+        let binary_request = request_with_body(post_method(), must_url(https("example.com", "/binary-request")), bytes("application/octet-stream", response.body.raw));
+        if wire_header_value_ci(lower_wire_request(binary_request).headers, "content-length") != "3" { return 1; }
+        match decode_text_strict(response.body) {
+            Ok(_) => { return 1; }
+            Err(error) => {
+                if error.kind != "codec" { return 1; }
+            }
+        }
+        if decode_text_lossy(response.body) != response.body.text { return 1; }
+        let nul_get = loopback_request(port, "/nul");
+        let nul_response = execute_request(nul_get.method, nul_get.url.host, nul_get);
+        if bytes_len(nul_response.body.raw) != 3 { return 1; }
+        match decode_text_strict(nul_response.body) {
+            Ok(value) => {
+                if value != nul_response.body.text { return 1; }
+            }
+            Err(_) => { return 1; }
+        }
+        return 0;
+    } with {
+        Error<HttpError>.raise(err) => {
+            finish 1;
+        }
+    };
 }
 
 flow check_url_and_header_smoke() -> i32 ![Error<HttpError>] {
@@ -680,7 +972,7 @@ flow check_request_options_and_body_smoke() -> i32 ![Error<HttpError>] {
     if count_wire_header(managed_wire.headers, "Accept") != 1 { return 1; }
     if bytes_body.media_type != "application/octet-stream" { return 1; }
     if bytes_body.text != "" { return 1; }
-    if bytes_response.text != "" { return 1; }
+    if bytes_response.text != "hello" { return 1; }
     if text_response_body.media_type != "text/plain" { return 1; }
     return 0;
 }
@@ -749,6 +1041,11 @@ flow check_response_status_and_mock_smoke() -> i32 ![Error<HttpError>] {
 }
 
 flow main(args: Array<string>) -> i32 ![Error<IndexError>, Error<HttpError>] {
+    if check_phase1_request_lengths_target(args) != 0 { return 1; }
+    if check_phase1_forged_length_target(args) != 0 { return 1; }
+    if check_phase1_empty_content_length_target(args) != 0 { return 1; }
+    if check_phase1_content_type_target(args) != 0 { return 1; }
+    if check_phase1_response_compatibility_target(args) != 0 { return 1; }
     if check_url_and_header_smoke() != 0 { return 1; }
     if check_request_options_and_body_smoke() != 0 { return 1; }
     if check_response_status_and_mock_smoke() != 0 { return 1; }

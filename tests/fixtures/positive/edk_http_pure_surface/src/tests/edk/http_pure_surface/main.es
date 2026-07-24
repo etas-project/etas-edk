@@ -249,7 +249,7 @@ flow check_url_and_headers() -> i32 ![Error<IndexError>, Error<HttpError>] {
     if is_request_body_within_limit(text_body, text_body_limit_short) { return 0; }
     if bytes_body.media_type != "application/octet-stream" { return 0; }
     if bytes_body.text != "" { return 0; }
-    if bytes_response.text != "" { return 0; }
+    if bytes_response.text != "hello" { return 0; }
     if text_response_body.media_type != "text/plain" { return 0; }
     return 1;
 }

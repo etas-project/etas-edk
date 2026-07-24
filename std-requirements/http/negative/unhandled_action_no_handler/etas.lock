@@ -5,10 +5,10 @@ manifest_fingerprint = "etas-lock-input:v1|package=std-req-http-unhandled-action
 name = "edk-http"
 version = "0.1.0"
 source = "vendor+.etas/vendor/edk/http"
-checksum = "blake3:89fc4b6b3053a979b1567688aa1b32913fbd47f6d72317ae7b0a98e72f136af1"
+checksum = "blake3:4e5cfe6d433c46113ada750202cf3c42cab20fa75f43807c42f8a7f3475e30da"
 dependencies = ["std|std|0.1.0"]
 import_root = "edk.http"
-metadata_fingerprint = "blake3:41334988625ca479bc5a216b824efcb10e9ef34578e6bb4b4aa880ddddbe3ee7"
+metadata_fingerprint = "blake3:f182f77028777f53ba360c63808074fec608b2c5386b2170a82b6422631e50c3"
 
 [[package]]
 name = "std"

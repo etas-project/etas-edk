@@ -121,10 +121,11 @@ metadata fallback.
 Request headers and request bodies are source-visible: EDK injects `Host`,
 forwards caller headers as `List<HttpHeader>`, stores both text and raw bytes
 on request/response bodies, and lowers `RequestBody.raw` into the
-`HttpWireRequest` `bytes` body. `RequestBody.length_bytes` is `usize` and
-remains part of the internal request shape for preflight and content-length
-lowering; raw byte helpers compute it from `std.bytes.len(raw)` instead of
-accepting a caller-provided length. The only remaining `usize` to `i32`
+`HttpWireRequest` `bytes` body. `RequestBody.length_bytes` remains in the public
+shape as informational metadata, but request preflight limits and wire
+`Content-Length` derive exclusively from `std.bytes.len(RequestBody.raw)`.
+Empty `POST`/`PUT`/`PATCH` requests emit `Content-Length: 0`; empty
+`GET`/`HEAD`/`DELETE` requests omit it. The only remaining `usize` to `i32`
 conversion is the explicit fail-closed boundary into the current
 `std.stream.ByteLimit` substrate.
 Caller-provided managed headers such as `Host`, `Connection`, and
@@ -132,7 +133,10 @@ Caller-provided managed headers such as `Host`, `Connection`, and
 `with_header` API accepts only `UserHeaderName` / `HeaderValue` evidence;
 `with_checked_header` is the string convenience boundary and returns an error
 instead of silently accepting or dropping managed headers. Direct wire lowering
-still strips managed headers as a defensive boundary. There is no public
+still strips managed headers as a defensive boundary. A checked explicit
+`Content-Type` overrides `RequestBody.media_type`; otherwise a safe non-empty
+media type is lowered automatically, including for an empty typed body. Header
+name matching and duplicate prevention are case-insensitive. There is no public
 `edk.http.headers.normalize.header(HeaderName, HeaderValue)` helper; raw header
 record construction is kept inside trusted EDK modules so package users cannot
 choose that path instead of `user_header_name(...)`, `header_value(...)`, or
@@ -142,8 +146,11 @@ through public `std` substrate. It decodes the response head with
 `std.http.codec.decode_response_head`, then decodes the full wire response so
 body bytes are returned as `ResponseBody.raw`. Invalid response status values
 are rejected as codec errors before the body path. Package-local response
-helpers decode raw bytes to text with `Replace`; the transport checked path
-uses `Strict` and maps `InvalidUtf8` to `HttpError` through `codec_error`.
+helpers and the transport compatibility field decode raw bytes to text with
+`Replace`, while `ResponseBody.raw` remains authoritative. Receiving a response
+does not require valid UTF-8. Callers can explicitly choose
+`decode_text_strict`, which maps `InvalidUtf8` to a codec `HttpError`, or
+`decode_text_lossy`.
 
 On TCP/TLS stream write, flush, read, or TLS handshake failure, the transport
 attempts best-effort `std.stream.close` before raising the original

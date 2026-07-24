@@ -14,9 +14,10 @@ public flow append(headers: Headers, item: Header) -> Headers ![] {
 }
 
 public flow set(headers: Headers, item: Header) -> Headers ![] {
+    let wanted = lowercase(trim(user_header_name_value(header_name(item))));
     var entries: Array<Header> = [];
     for existing in headers.entries limit Iterations(65536) {
-        if user_header_name_value(header_name(existing)) != user_header_name_value(header_name(item)) {
+        if lowercase(trim(user_header_name_value(header_name(existing)))) != wanted {
             entries = entries.push(existing);
         }
     }
@@ -86,7 +87,7 @@ public flow count(headers: Headers) -> i32 ![] {
 public flow find(headers: Headers, name: string) -> HeaderLookup ![] {
     let wanted = lowercase(trim(name));
     for item in headers.entries limit Iterations(65536) {
-        if user_header_name_value(header_name(item)) == wanted {
+        if lowercase(trim(user_header_name_value(header_name(item)))) == wanted {
             return HeaderLookup { found = true, value = header_text_value(item) };
         }
     }

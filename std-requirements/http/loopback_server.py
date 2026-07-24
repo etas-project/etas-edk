@@ -30,6 +30,24 @@ class LoopbackHandler(http.server.BaseHTTPRequestHandler):
                 {"content-type": "text/plain", "x-edk-loopback": "yes"},
             )
             return
+        if self.path == "/binary":
+            payload = b"\xff\xfe\xfd"
+            self.send_response(200)
+            self.send_header("content-length", str(len(payload)))
+            self.send_header("content-type", "application/octet-stream")
+            self.send_header("connection", "close")
+            self.end_headers()
+            self.wfile.write(payload)
+            return
+        if self.path == "/nul":
+            payload = b"a\x00b"
+            self.send_response(200)
+            self.send_header("content-length", str(len(payload)))
+            self.send_header("content-type", "text/plain")
+            self.send_header("connection", "close")
+            self.end_headers()
+            self.wfile.write(payload)
+            return
         if self.path == "/large":
             self.write_response(
                 200,

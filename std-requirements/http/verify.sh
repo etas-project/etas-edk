@@ -260,6 +260,82 @@ run_loopback_allow_net_if_enabled() {
     rm -f "$port_file" "$server_out" "$run_out"
 }
 
+run_phase1_loopback_if_enabled() {
+    if [ "${ETAS_HTTP_RUN_PHASE1:-0}" != "1" ]; then
+        printf 'SKIP target: Phase 1 binary response contract (set ETAS_HTTP_RUN_PHASE1=1)\n'
+        return 0
+    fi
+
+    port_file=$(tmpfile)
+    server_out=$(tmpfile)
+    run_out=$(tmpfile)
+    python3 "$ROOT/loopback_server.py" --port-file "$port_file" >"$server_out" 2>&1 &
+    server_pid=$!
+
+    i=0
+    while [ ! -s "$port_file" ] && [ "$i" -lt 20 ]; do
+        sleep 1
+        i=$((i + 1))
+    done
+
+    if [ ! -s "$port_file" ]; then
+        printf 'loopback server did not publish a port\n' >&2
+        cat "$server_out" >&2
+        kill "$server_pid" 2>/dev/null || true
+        wait "$server_pid" 2>/dev/null || true
+        rm -f "$port_file" "$server_out" "$run_out"
+        return 1
+    fi
+
+    port=$(cat "$port_file")
+    printf 'RUN target: Phase 1 binary response contract\n'
+    set +e
+    (cd "$EDK_HTTP" && etas run . --allow-effects --allow-net "127.0.0.1:$port" --flow check_loopback_binary_response_target --args "$port") >"$run_out" 2>&1
+    status=$?
+    set -e
+
+    kill "$server_pid" 2>/dev/null || true
+    wait "$server_pid" 2>/dev/null || true
+
+    if [ "$status" -ne 0 ] || ! grep -F 'run value: {"kind":"number","type":"i32","value":"0"}' "$run_out" >/dev/null; then
+        cat "$server_out" >&2
+        cat "$run_out" >&2
+        rm -f "$port_file" "$server_out" "$run_out"
+        return 1
+    fi
+
+    rm -f "$port_file" "$server_out" "$run_out"
+}
+
+run_phase1_pure_targets_if_enabled() {
+    if [ "${ETAS_HTTP_RUN_PHASE1:-0}" != "1" ]; then
+        printf 'SKIP target: Phase 1 pure HTTP contracts (set ETAS_HTTP_RUN_PHASE1=1)\n'
+        return 0
+    fi
+
+    for flow in \
+        check_phase1_request_lengths_target \
+        check_phase1_forged_length_target \
+        check_phase1_empty_content_length_target \
+        check_phase1_content_type_target \
+        check_phase1_response_compatibility_target
+    do
+        out=$(tmpfile)
+        printf 'RUN target: %s\n' "$flow"
+        if ! (cd "$EDK_HTTP" && etas run . --flow "$flow") >"$out" 2>&1; then
+            cat "$out" >&2
+            rm -f "$out"
+            return 1
+        fi
+        if ! grep -F 'run value: {"kind":"number","type":"i32","value":"0"}' "$out" >/dev/null; then
+            cat "$out" >&2
+            rm -f "$out"
+            return 1
+        fi
+        rm -f "$out"
+    done
+}
+
 trap cleanup EXIT INT TERM
 
 run_pass "edk-http package check" "$EDK_HTTP" etas check --all .
@@ -425,9 +501,11 @@ run_file_contains "request bodies lower as bytes not text fallback" \
 
 run_file_contains "wire lowering injects checked content length" \
     src/edk/http/wire/lower_request.es \
+    "import std.bytes.len as bytes_len;" \
     "content-length" \
     "to_string_usize(body_length)" \
-    "lower_wire_headers(request.headers, request.url, request.body.length_bytes)"
+    "let body_length = bytes_len(request.body.raw)" \
+    "should_emit_content_length(method, body_length)"
 
 run_file_contains "wire lowering requests connection close" \
     src/edk/http/wire/lower_request.es \
@@ -444,21 +522,27 @@ run_file_contains "package smoke checks content length injection" \
 
 run_file_contains "request body limit uses byte length" \
     src/edk/http/wire/body_limit.es \
-    "length_bytes <= limit.max_bytes" \
-    "body.length_bytes"
+    "import std.bytes.len as bytes_len;" \
+    "bytes_len(body.raw)"
 
 run_file_contains "transport returns decoded response bytes" \
     src/edk/http/transport.es \
     "http_response_from_wire_bytes_checked" \
     "return response_from_wire_checked(head, response);"
 
-run_file_contains "response body bytes decode through std text codec" \
+run_file_contains "response body bytes remain authoritative with lossy compatibility text" \
     src/edk/http/wire/decode_response.es \
-    "import std.codec.text.{InvalidUtf8, Replace, Strict, utf8_decode, utf8_encode};" \
+    "import std.codec.text.{Replace, utf8_decode, utf8_encode};" \
     "let decoded = match utf8_decode(raw, Replace)" \
     "text = decoded" \
-    "match utf8_decode(raw, Strict)" \
-    "Err(InvalidUtf8) => Err(codec_error(\"HTTP response body is not valid UTF-8\"))"
+    "return Ok(http_response_from_wire_bytes(response));"
+
+run_file_contains "explicit response text helpers decode authoritative raw bytes" \
+    src/edk/http/body/mod.es \
+    "flow decode_text_strict(body: ResponseBody)" \
+    "utf8_decode(body.raw, Strict)" \
+    "flow decode_text_lossy(body: ResponseBody)" \
+    "utf8_decode(body.raw, Replace)"
 
 run_file_contains "package smoke covers decoded raw response bytes" \
     src/edk/http/package_smoke.es \
@@ -620,7 +704,9 @@ run_expect_fail "loopback runtime fixture fails closed without allow-net" \
     "$EDK_HTTP" \
     "analysis::MissingHostHandler" \
     etas run . --flow check_loopback_runtime_contract --args 1
+run_phase1_pure_targets_if_enabled
 run_loopback_allow_net_if_enabled
+run_phase1_loopback_if_enabled
 
 run_pkg_check_pass "direct EdkHttp action checks without handler" "$ROOT/negative/unhandled_action_no_handler"
 run_expect_fail "direct EdkHttp action does not run without handler" \
