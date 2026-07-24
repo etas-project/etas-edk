@@ -50,7 +50,7 @@ run_pkg_run_value() {
         if [ "$had_lock" -eq 0 ]; then rm -f "$dir/etas.lock"; fi
         return 1
     fi
-    if ! grep -F "run value: {\"kind\":\"int\",\"value\":$expected}" "$out" >/dev/null; then
+    if ! grep -F "run value: {\"kind\":\"number\",\"type\":\"i32\",\"value\":\"$expected\"}" "$out" >/dev/null; then
         printf 'missing expected run value: %s\n' "$expected" >&2
         cat "$out" >&2
         rm -f "$out"
@@ -250,7 +250,7 @@ run_loopback_allow_net_if_enabled() {
     kill "$server_pid" 2>/dev/null || true
     wait "$server_pid" 2>/dev/null || true
 
-    if [ "$status" -ne 0 ] || ! grep -F 'run value: {"kind":"int","value":0}' "$run_out" >/dev/null; then
+    if [ "$status" -ne 0 ] || ! grep -F 'run value: {"kind":"number","type":"i32","value":"0"}' "$run_out" >/dev/null; then
         cat "$server_out" >&2
         cat "$run_out" >&2
         rm -f "$port_file" "$server_out" "$run_out"
