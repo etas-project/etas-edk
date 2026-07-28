@@ -97,6 +97,35 @@ metadata are available.
 
 See `tests/blocked/edk-workspace-path-escape-runtime-guard.txt`.
 
+## Command Value Construction
+
+Packages: `edk-git`, any package that shells out through `std.host.command.run`
+
+Accepted substrate with missing implementation:
+
+- a public `std.host.command.new(argv, env, cwd, stdin) -> Command` constructor;
+- the `Command` support type is currently opaque to Etas source — it can be
+  passed as a parameter but can never be constructed or destructured in
+  ordinary Etas code;
+- the internal `InterpValue::Command { argv, env, cwd, stdin }` variant
+  already exists in the interpreter; adding a constructor flow is a
+  registry-only change with no new runtime work.
+
+Missing surface prevents writing source-level default handlers that translate
+package-owned effects (e.g. `EdkGit.read/write`) to `Command.run` actions.
+Without a `Command` constructor, a handler cannot build the `Command` value
+needed to shell out to external tools such as `git`.
+
+Safety impact:
+
+Hiding command construction inside a host binding or opaque package-private
+adapter would make the `Command.run` authority invisible to policy, trace, and
+replay. A source-level constructor keeps the command shape (argv, env, cwd,
+stdin) visible to the checked effect row before execution.
+
+See `packages/edk-git/src/edk/git/handlers/default.es` and
+`tests/blocked/edk-default-handlers-substrate.txt`.
+
 ## Bytes And Text Codecs
 
 Packages: `edk-workspace`, `edk-http`, `edk-docs`, `edk-pdf`

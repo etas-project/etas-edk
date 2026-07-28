@@ -11,7 +11,7 @@ root = "src"
 
 [dependencies]
 std = { version = "0.1" }
-edk_workspace = { path = "../edk-workspace", import = "edk.workspace" }
+# edk_workspace = { path = "../edk-workspace", import = "edk.workspace" }
 
 [[bin]]
 name = "edk-git-smoke"
