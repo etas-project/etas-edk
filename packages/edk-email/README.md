@@ -24,7 +24,7 @@ provider, or delivery handler is published in this slice.
 The current action family form is `EdkEmail.send<A>` for recipient evidence and
 `EdkEmail.read` for mailbox reads. `EmailAccount` remains payload data until
 EDK introduces checked account selectors and package metadata can publish them.
-The gap is tracked in `std-requirements/substrate-gaps.md`.
+The gap is tracked in `tests/std-requirements/substrate-gaps.md`.
 
 SMTP execution is intentionally not implemented because public stream/TLS
 substrate is not available yet. Provider-specific HTTP execution remains a host

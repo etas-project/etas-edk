@@ -1,0 +1,19 @@
+[package]
+name = "std-req-http-unhandled-action-no-handler"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Negative std requirements probe proving direct EdkHttp.request has no metadata fallback handler"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-unhandled-action-no-handler"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "std-req-http-unhandled-action-no-handler"
+module = "std_requirements.http.negative.unhandled_action_no_handler.main"
+flow = "main"

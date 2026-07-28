@@ -51,7 +51,7 @@ with `Strict` and maps `InvalidUtf8` to `HttpError`.
 Runtime inspection of std `Result` helpers is now covered by HTTP requirements
 fixtures. `std.result.is_err`, `std.bytes.len`, and source-level
 `match decode_response(...) { Ok(...) => ..., Err(MalformedMessage) => ... }`
-run through `std-requirements/http/positive/*` probes.
+run through `tests/std-requirements/http/positive/*` probes.
 
 Exact `StreamError.LimitExceeded` qualified-path classification is now covered.
 Direct `import std.stream.{LimitExceeded}` and qualified
@@ -60,22 +60,22 @@ Direct `import std.stream.{LimitExceeded}` and qualified
 
 Current repro evidence:
 
-- `std-requirements/http/positive/std_stream_substrate` checks that
+- `tests/std-requirements/http/positive/std_stream_substrate` checks that
   `std.net.tcp.TcpStream` and `std.tls.TlsStream` can be passed to
   `std.stream.write_all`, `std.stream.flush`, `std.stream.read_until_limit`,
   and `std.stream.close`;
-- `std-requirements/http/positive/http_wire_request_shape` checks that source
+- `tests/std-requirements/http/positive/http_wire_request_shape` checks that source
   can construct `HttpWireRequest` with `version`, `List<HttpHeader>`, `Host`,
   and a non-empty `bytes` body from `std.codec.text.utf8_encode`.
-- `std-requirements/http/positive/http_response_body_text_decode` covers
+- `tests/std-requirements/http/positive/http_response_body_text_decode` covers
   response body bytes-to-text decode.
-- `std-requirements/http/positive/http_codec_result_match` covers
+- `tests/std-requirements/http/positive/http_codec_result_match` covers
   `Ok`/`Err(MalformedMessage)` Result matching for std HTTP codec values.
-- `std-requirements/http/positive/std_bytes_len_runtime` covers runtime
+- `tests/std-requirements/http/positive/std_bytes_len_runtime` covers runtime
   `std.bytes.len`.
-- `std-requirements/http/positive/stream_error_limit_import` covers directly
+- `tests/std-requirements/http/positive/stream_error_limit_import` covers directly
   imported `LimitExceeded`.
-- `std-requirements/http/positive/stream_error_limit_variant` covers qualified
+- `tests/std-requirements/http/positive/stream_error_limit_variant` covers qualified
   `StreamError.LimitExceeded`.
 
 Package-local runtime execution of the public source handler is partially
@@ -85,7 +85,7 @@ executes public `edk.http.request` with an unsupported method and observes
 constructor and direct preflight-helper smoke remain runnable.
 `check_loopback_runtime_contract` contains a real loopback get/post/body-limit
 and malformed-response runtime probe with no mock response fallback. It is
-paired with `std-requirements/http/loopback_server.py`, a local HTTP/1.1 server
+paired with `tests/std-requirements/http/loopback_server.py`, a local HTTP/1.1 server
 fixture for `/hello`, `/echo`, `/large`, and `/malformed`. Running without
 `--allow-net` fails closed with `TCP host adapter is not configured`; running
 with explicit `--allow-effects --allow-net 127.0.0.1:<port>` reaches the server
@@ -124,12 +124,12 @@ Regression coverage:
   `Stream.close`; checked-HIR execution reports
   `requires-orchestration[host=Tcp, Stream, Tls]`, so this is not a local
   no-action network execution path;
-- `std-requirements/http/negative/unhandled_action_no_handler` repeats that
+- `tests/std-requirements/http/negative/unhandled_action_no_handler` repeats that
   check against the real `edk_http` package and expects
   `analysis::UnhandledEffectAction`;
 - package-private visibility remains missing: `edk.http.api` needs to call
   `edk.http.transport.execute_request` across modules, which currently requires
   `public`; the old external negative fixture was removed rather than kept as a
   fake gate;
-- `std-requirements/http/positive/stream_error_limit_variant` keeps qualified
+- `tests/std-requirements/http/positive/stream_error_limit_variant` keeps qualified
   `StreamError.LimitExceeded` source visibility and runtime matching covered.

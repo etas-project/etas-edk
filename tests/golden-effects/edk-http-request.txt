@@ -166,7 +166,7 @@ Package-local runtime replay now proves public `request(TRACE ...)` raises
 get/post/body-limit/malformed response contract exists; it fails closed without
 `--allow-net` and returns `0` with explicit
 `--allow-effects --allow-net 127.0.0.1:<port>`. External root API checked-effect
-fact replay is covered by `std-requirements/http/positive/external_root_api_effect_facts`.
+fact replay is covered by `tests/std-requirements/http/positive/external_root_api_effect_facts`.
 See
 `tests/blocked/edk-http-default-handler-substrate.txt`.
 

@@ -23,7 +23,7 @@ publish a default secret, HTTP, or GitHub API handler in this slice.
 The current static selector form is `EdkGitHub.issue_create<R>`,
 `EdkGitHub.pr_comment<R>`, and `EdkGitHub.read<R>`, where `R` is repository
 evidence. Runtime repository strings stay in payload data. The package metadata
-gap is tracked in `std-requirements/substrate-gaps.md`.
+gap is tracked in `tests/std-requirements/substrate-gaps.md`.
 
 Default handlers over `edk-http` and local `edk-git` remain pending. Pure REST
 encoding helpers do not execute network IO. `GitHubTokenRef` is a

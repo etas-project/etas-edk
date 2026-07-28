@@ -367,7 +367,7 @@ Current fixture policy:
   effect row is written as bare `EdkProbe.request`; this is tracked as a
   frontend blocker, not a EDK fallback.
 - `tests/blocked/edk-frontend-tooling-gaps.txt` keeps compiler, frontend, CLI,
-  and package-manager gaps out of `std-requirements/` while preserving
+  and package-manager gaps out of `tests/std-requirements/` while preserving
   unresolved work items for package metadata, scoped custom actions,
   source-file checks, workspace manifests, and contextual-keyword record
   literals.
@@ -395,8 +395,8 @@ Current fixture policy:
   `HttpNoPrivateNetwork`, `HttpRequireTimeout`, and `HttpBoundedBody` remain
   blocked until package metadata can export action argument templates and
   request-field policy predicates. Source-local exact HTTP policy coverage
-  lives in `std-requirements/http/positive/scoped_policy_allow_get` and
-  `std-requirements/http/negative/scoped_policy_deny_post`.
+  lives in `tests/std-requirements/http/positive/scoped_policy_allow_get` and
+  `tests/std-requirements/http/negative/scoped_policy_deny_post`.
 - `tests/blocked/edk-http-mock-dry-run-trace.txt` records that HTTP mock and
   dry-run trace execution is blocked; current mocks are deterministic pure
   route-match helpers, not registered production handlers.
@@ -405,20 +405,20 @@ Current fixture policy:
 - `tests/fixtures/negative/edk_http_opinionated_api_forbidden` proves
   `edk.http` and `edk.http.api` do not expose `post_json`, and no
   `edk.http.tools.*` JSON/text shortcuts are public API.
-- `std-requirements/http/negative/client_request_entry_forbidden` proves
+- `tests/std-requirements/http/negative/client_request_entry_forbidden` proves
   `edk.http.client.request` is not a second public HTTP execution entry point;
   public request execution stays on `edk.http.request/get/post/put/patch/delete/head`.
-- `std-requirements/http/positive/external_root_api_effect_facts` proves
+- `tests/std-requirements/http/positive/external_root_api_effect_facts` proves
   external path-dependency calls to effectful root `edk.http.get/post` APIs and
   direct `edk.http.api.get/post` imports replay checked effect facts after
   package metadata is materialized.
-- `std-requirements/http/negative/unhandled_action_no_handler` is the target
+- `tests/std-requirements/http/negative/unhandled_action_no_handler` is the target
   direct-action fixture for `perform EdkHttp.request(request)` against the real
   package. It must fail at runtime without an explicit handler, but current
   frontend verification is blocked until scoped action parameters are
   materialized from request evidence.
-- `std-requirements/http/positive/stream_error_limit_import` and
-  `std-requirements/http/positive/stream_error_limit_variant` prove both direct
+- `tests/std-requirements/http/positive/stream_error_limit_import` and
+  `tests/std-requirements/http/positive/stream_error_limit_variant` prove both direct
   import and qualified `StreamError.LimitExceeded` forms are source-visible and
   runtime-matchable. EDK HTTP maps that path to `response_body_limit`.
 - `tests/fixtures/negative/edk_http_private_host_client_forbidden` proves a

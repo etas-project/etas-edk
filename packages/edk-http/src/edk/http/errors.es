@@ -1,5 +1,6 @@
 module edk.http.errors;
 
+import std.text.join;
 import edk.http.types.StatusCode;
 
 public alias HttpError = {
@@ -82,10 +83,30 @@ public flow stream_transport_error(message: string) -> HttpError ![] {
     return http_error("stream", message);
 }
 
-public flow response_body_read_error(message: string) -> HttpError ![] {
-    return http_error("response_body_read", message);
-}
-
 public flow response_body_limit_error(message: string) -> HttpError ![] {
     return http_error("response_body_limit", message);
+}
+
+public flow stream_timeout_for_phase(phase: string) -> HttpError ![] {
+    return http_error("timeout", join([phase, " timed out"], ""));
+}
+
+public flow stream_cancelled_for_phase(phase: string) -> HttpError ![] {
+    return http_error("cancelled", join([phase, " cancelled"], ""));
+}
+
+public flow stream_closed_for_phase(phase: string) -> HttpError ![] {
+    return http_error("closed", join([phase, " failed: stream closed"], ""));
+}
+
+public flow stream_interrupted_for_phase(phase: string) -> HttpError ![] {
+    return http_error("interrupted", join([phase, " interrupted"], ""));
+}
+
+public flow stream_limit_for_phase(phase: string) -> HttpError ![] {
+    return response_body_limit_error(join([phase, " limit exceeded"], ""));
+}
+
+public flow stream_host_for_phase(phase: string) -> HttpError ![] {
+    return stream_transport_error(join([phase, " failed"], ""));
 }

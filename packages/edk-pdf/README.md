@@ -36,7 +36,7 @@ parse native PDF bytes or render PDF graphics.
 The current action family form is `EdkPdf.read`. Path authority is carried by
 checked `WorkspacePath` payload evidence and workspace policy metadata rather
 than by a runtime path value in action type arguments. The gap is tracked in
-`std-requirements/substrate-gaps.md`.
+`tests/std-requirements/substrate-gaps.md`.
 
 Package-mode verification now passes with `etas pkg update .`, `etas pkg lock
 .`, `etas check --all .`, and `etas run .`. This verifies the source package

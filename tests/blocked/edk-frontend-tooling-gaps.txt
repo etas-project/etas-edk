@@ -6,7 +6,7 @@ Current gaps:
 - package-defined action metadata for rows such as
   `EdkWorkspace.read<R>` and `EdkGitHub.issue_create<R>`;
 - package metadata emission for `edk-http` root/API flows is now covered by
-  `std-requirements/http/positive/external_root_api_effect_facts`; broader
+  `tests/std-requirements/http/positive/external_root_api_effect_facts`; broader
   dependency packages still need fixture coverage for nominal evidence records,
   specs, impl evidence, and parameterized action rows;
 - payload-aware policy metadata that can inspect checked request evidence

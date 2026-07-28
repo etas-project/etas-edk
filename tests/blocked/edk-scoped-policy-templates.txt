@@ -7,11 +7,11 @@ Safe deny-only templates are source-present under each integration package's
 Source-local HTTP policy fixtures cover the static action family. Exact
 method/host policy matching is blocked on runtime payload inspection:
 
-- `std-requirements/http/positive/scoped_policy_allow_get` accepts
+- `tests/std-requirements/http/positive/scoped_policy_allow_get` accepts
   `EdkHttp.request`;
-- `std-requirements/http/negative/scoped_policy_deny_post` rejects
+- `tests/std-requirements/http/negative/scoped_policy_deny_post` rejects
   `EdkHttp.request`.
-- `std-requirements/http/positive/root_wrapper_exact_policy_scope/probe.es`
+- `tests/std-requirements/http/positive/root_wrapper_exact_policy_scope/probe.es`
   is the package-local target probe for exact
   `EdkHttp.request` coverage over root
   `edk.http.get(...)` and direct `edk.http.api.get(...)`.

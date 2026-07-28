@@ -23,7 +23,7 @@ default network, provider, search, or crawl handler is published in this slice.
 The current action family form is `EdkWeb.fetch` and `EdkWeb.crawl`. Domain
 authority is runtime URL payload data until package metadata can publish
 payload-aware policies or a typed static selector. The gap is tracked in
-`std-requirements/substrate-gaps.md`.
+`tests/std-requirements/substrate-gaps.md`.
 
 HTTP-backed provider handlers are intentionally pending. `fetch.page_from_http`
 is a pure decoder helper over an already supplied `HttpResponse`; it is not a

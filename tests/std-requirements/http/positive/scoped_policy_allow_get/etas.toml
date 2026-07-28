@@ -1,0 +1,19 @@
+[package]
+name = "std-req-http-scoped-policy-allow-get"
+version = "0.1.0"
+edition = "2026"
+license = "MIT"
+description = "Positive std requirements probe for scoped EdkHttp.request GET allow policy"
+repository = "https://example.invalid/etas-edk-std-requirements/std-req-http-scoped-policy-allow-get"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.1" }
+edk_http = { path = "../../../../../packages/edk-http", import = "edk.http" }
+
+[[bin]]
+name = "std-req-http-scoped-policy-allow-get"
+module = "std_requirements.http.positive.scoped_policy_allow_get.main"
+flow = "main"

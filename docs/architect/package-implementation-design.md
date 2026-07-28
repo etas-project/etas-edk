@@ -1687,7 +1687,7 @@ When implementation starts, each package must satisfy:
 - every escaping public action is explicitly abstract and must be handled by the
   caller/application;
 - all package implementation handlers are Etas code over public lower-level APIs;
-- all missing substrate is recorded in `std-requirements/substrate-gaps.md`;
+- all missing substrate is recorded in `tests/std-requirements/substrate-gaps.md`;
 - package metadata exposes tool schemas, determinism, trust, idempotency, and
   mock bindings, but not runtime fallback handler mappings;
 - golden effects prove no action is hidden;

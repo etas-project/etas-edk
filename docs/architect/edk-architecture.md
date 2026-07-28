@@ -52,7 +52,7 @@ This repository must not own:
 - language SPEC files.
 
 If a package cannot be implemented over public `std` substrate primitives, the
-required low-level primitive must be recorded under `std-requirements/` instead
+required low-level primitive must be recorded under `tests/std-requirements/` instead
 of hidden behind a package-private host binding.
 
 Accepted substrate action owners use uppercase names without a `Std` prefix:

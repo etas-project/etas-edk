@@ -80,7 +80,7 @@ EDK already contains 13 packages, more than 200 `.es` source files, and roughly
 - Currently, all three directories are empty. `examples/README.md` also states
   that the example directories are placeholders for future executable examples.
 - Another missing area is the seven-scenario cross-package matrix in
-  `std-requirements/substrate-gaps.md` section 18: research assistant, report
+  `tests/std-requirements/substrate-gaps.md` section 18: research assistant, report
   publisher, PR reviewer, PDF ingestion, browser capture, workflow planning,
   and evaluation run. `tests/fixtures/positive/edk_cross_package_matrix` covers
   only part of the test sources, while the complete `edk_cross_package_matrix`
@@ -500,7 +500,7 @@ EDK already contains 13 packages, more than 200 `.es` source files, and roughly
 
 ### 8.1 Substrate gaps follow the SPEC exception model, but some content is ahead of it
 
-- `std-requirements/substrate-gaps.md` records that TCP/TLS streams can now be
+- `tests/std-requirements/substrate-gaps.md` records that TCP/TLS streams can now be
   passed to `stream.read/write_all`, `HttpWireRequest` construction and
   `HttpWireResponse` decoding are available, and
   `std.codec.text.Strict/Replace/InvalidUtf8` is runtime-callable. It also says
@@ -535,7 +535,7 @@ EDK already contains 13 packages, more than 200 `.es` source files, and roughly
 
 ### 8.3 Several items mentioned by `accepted-primitives.md` are not surfaced here
 
-- `std-requirements/accepted-primitives.md` exists. The EDK assumptions about
+- `tests/std-requirements/accepted-primitives.md` exists. The EDK assumptions about
   `std.net.tcp`, `std.stream`, `std.tls`, `std.fs`, `std.http.codec`,
   `std.codec.text`, `std.secret`, `std.crypto`, and `std.browser.protocol` align
   with SPEC section 17, subsection 7. EDK sources import these modules and can run
@@ -695,7 +695,7 @@ implementation can be found:
 - Root: `README.md`, `etas.toml`,
   `docs/architect/{edk-architecture.md, package-layout.md, package-implementation-design.md}`,
   `packages/README.md`, `tests/package-status.md`,
-  `std-requirements/substrate-gaps.md`, and
+  `tests/std-requirements/substrate-gaps.md`, and
   `tests/diagnostics/removed-std-vocabulary.txt`.
 - Packages: `edk-http` (`etas.toml`, `README.md`, `policy.es`, `types.es`,
   `api.es`, `transport.es`); `edk-workspace` (`types.es`, `effects.es`,

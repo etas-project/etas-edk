@@ -87,4 +87,4 @@ Acceptable exceptions:
 - test mocks;
 - generated Etas source checked normally;
 - platform acceleration that preserves an Etas reference implementation;
-- temporary substrate gaps explicitly tracked under `std-requirements/`.
+- temporary substrate gaps explicitly tracked under `tests/std-requirements/`.

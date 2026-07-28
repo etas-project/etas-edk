@@ -2,10 +2,10 @@ module edk.http.transport;
 
 import std.http.codec.{HttpWireResponse, HttpWireResponseHead, decode_response as decode_wire_response, decode_response_head as decode_wire_response_head, encode_request as encode_wire_request};
 import std.net.tcp.{Host as TcpHost, NetworkError, Port as TcpPort, TcpOptions, TcpStream, connect as tcp_connect};
-import std.stream.{ByteLimit as StreamByteLimit, LimitExceeded, StreamError, Timeout as StreamTimeout, close, flush, read_until_limit, write_all};
+import std.stream.{ByteLimit as StreamByteLimit, Cancelled, Closed, Host as StreamHost, Interrupted, LimitExceeded, StreamError, TimedOut, Timeout as StreamTimeout, close, flush, read_until_limit, write_all};
 import std.text.{parse_i32, to_string_usize};
 import std.tls.{Host as TlsHost, TlsConfig, TlsError as StdTlsError, TlsStream, connect as tls_connect};
-import edk.http.errors.{codec_error, network_transport_error, response_body_limit_error, response_body_read_error, stream_transport_error, tls_transport_error};
+import edk.http.errors.{codec_error, network_transport_error, response_body_limit_error, stream_cancelled_for_phase, stream_closed_for_phase, stream_host_for_phase, stream_interrupted_for_phase, stream_limit_for_phase, stream_timeout_for_phase, tls_transport_error};
 import edk.http.handlers.preflight.preflight_request;
 import edk.http.pure.status.is_valid_status;
 import edk.http.types.{HttpMethod, HttpRequest, HttpResponse};
@@ -94,7 +94,7 @@ flow ignore_close_error(err: StreamError) -> unit ![]
     return;
 }
 
-flow close_tls_after_error(stream: TlsStream) -> unit ![]
+flow close_tls_best_effort(stream: TlsStream) -> unit ![]
 {
     close(stream) with {
         Error<StreamError>.raise(err) => {
@@ -104,7 +104,7 @@ flow close_tls_after_error(stream: TlsStream) -> unit ![]
     return;
 }
 
-flow close_tcp_after_error(stream: TcpStream) -> unit ![]
+flow close_tcp_best_effort(stream: TcpStream) -> unit ![]
 {
     close(stream) with {
         Error<StreamError>.raise(err) => {
@@ -117,33 +117,31 @@ flow close_tcp_after_error(stream: TcpStream) -> unit ![]
 flow exchange_tls(stream: TlsStream, encoded: bytes, request: HttpRequest) -> HttpResponse ![Error<HttpError>]
 {
     write_all(stream, encoded) with {
-        Error<StreamError>.raise(err) => {
-            close_tls_after_error(stream);
-            finish raise_http_error(stream_transport_error("TLS stream write failed"));
-        }
+        Error<StreamError>.raise(TimedOut) => { close_tls_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TLS request write")); }
+        Error<StreamError>.raise(Cancelled) => { close_tls_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TLS request write")); }
+        Error<StreamError>.raise(Closed) => { close_tls_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TLS request write")); }
+        Error<StreamError>.raise(Interrupted) => { close_tls_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TLS request write")); }
+        Error<StreamError>.raise(LimitExceeded) => { close_tls_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TLS request write")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tls_best_effort(stream); finish raise_http_error(stream_host_for_phase("TLS request write")); }
     };
     flush(stream) with {
-        Error<StreamError>.raise(err) => {
-            close_tls_after_error(stream);
-            finish raise_http_error(stream_transport_error("TLS stream flush failed"));
-        }
+        Error<StreamError>.raise(TimedOut) => { close_tls_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TLS request flush")); }
+        Error<StreamError>.raise(Cancelled) => { close_tls_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TLS request flush")); }
+        Error<StreamError>.raise(Closed) => { close_tls_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TLS request flush")); }
+        Error<StreamError>.raise(Interrupted) => { close_tls_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TLS request flush")); }
+        Error<StreamError>.raise(LimitExceeded) => { close_tls_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TLS request flush")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tls_best_effort(stream); finish raise_http_error(stream_host_for_phase("TLS request flush")); }
     };
     let limit = stream_limit(request);
     let raw = read_until_limit(stream, limit, stream_timeout(request)) with {
-        Error<StreamError>.raise(LimitExceeded) => {
-            close_tls_after_error(stream);
-            finish raise_http_error(response_body_limit_error("TLS response body exceeded configured body limit"));
-        }
-        Error<StreamError>.raise(err) => {
-            close_tls_after_error(stream);
-            finish raise_http_error(response_body_read_error("TLS response body read failed or timed out"));
-        }
+        Error<StreamError>.raise(LimitExceeded) => { close_tls_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TLS response read")); }
+        Error<StreamError>.raise(TimedOut) => { close_tls_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TLS response read")); }
+        Error<StreamError>.raise(Cancelled) => { close_tls_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TLS response read")); }
+        Error<StreamError>.raise(Closed) => { close_tls_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TLS response read")); }
+        Error<StreamError>.raise(Interrupted) => { close_tls_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TLS response read")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tls_best_effort(stream); finish raise_http_error(stream_host_for_phase("TLS response read")); }
     };
-    close(stream) with {
-        Error<StreamError>.raise(err) => {
-            finish raise_http_error(stream_transport_error("TLS stream close failed"));
-        }
-    };
+    close_tls_best_effort(stream);
     let head = decode_response_head_checked(raw);
     validate_response_head(head);
     let response = decode_response_checked(raw);
@@ -153,33 +151,31 @@ flow exchange_tls(stream: TlsStream, encoded: bytes, request: HttpRequest) -> Ht
 flow exchange_tcp(stream: TcpStream, encoded: bytes, request: HttpRequest) -> HttpResponse ![Error<HttpError>]
 {
     write_all(stream, encoded) with {
-        Error<StreamError>.raise(err) => {
-            close_tcp_after_error(stream);
-            finish raise_http_error(stream_transport_error("TCP stream write failed"));
-        }
+        Error<StreamError>.raise(TimedOut) => { close_tcp_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TCP request write")); }
+        Error<StreamError>.raise(Cancelled) => { close_tcp_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TCP request write")); }
+        Error<StreamError>.raise(Closed) => { close_tcp_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TCP request write")); }
+        Error<StreamError>.raise(Interrupted) => { close_tcp_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TCP request write")); }
+        Error<StreamError>.raise(LimitExceeded) => { close_tcp_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TCP request write")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tcp_best_effort(stream); finish raise_http_error(stream_host_for_phase("TCP request write")); }
     };
     flush(stream) with {
-        Error<StreamError>.raise(err) => {
-            close_tcp_after_error(stream);
-            finish raise_http_error(stream_transport_error("TCP stream flush failed"));
-        }
+        Error<StreamError>.raise(TimedOut) => { close_tcp_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TCP request flush")); }
+        Error<StreamError>.raise(Cancelled) => { close_tcp_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TCP request flush")); }
+        Error<StreamError>.raise(Closed) => { close_tcp_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TCP request flush")); }
+        Error<StreamError>.raise(Interrupted) => { close_tcp_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TCP request flush")); }
+        Error<StreamError>.raise(LimitExceeded) => { close_tcp_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TCP request flush")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tcp_best_effort(stream); finish raise_http_error(stream_host_for_phase("TCP request flush")); }
     };
     let limit = stream_limit(request);
     let raw = read_until_limit(stream, limit, stream_timeout(request)) with {
-        Error<StreamError>.raise(LimitExceeded) => {
-            close_tcp_after_error(stream);
-            finish raise_http_error(response_body_limit_error("TCP response body exceeded configured body limit"));
-        }
-        Error<StreamError>.raise(err) => {
-            close_tcp_after_error(stream);
-            finish raise_http_error(response_body_read_error("TCP response body read failed or timed out"));
-        }
+        Error<StreamError>.raise(LimitExceeded) => { close_tcp_best_effort(stream); finish raise_http_error(stream_limit_for_phase("TCP response read")); }
+        Error<StreamError>.raise(TimedOut) => { close_tcp_best_effort(stream); finish raise_http_error(stream_timeout_for_phase("TCP response read")); }
+        Error<StreamError>.raise(Cancelled) => { close_tcp_best_effort(stream); finish raise_http_error(stream_cancelled_for_phase("TCP response read")); }
+        Error<StreamError>.raise(Closed) => { close_tcp_best_effort(stream); finish raise_http_error(stream_closed_for_phase("TCP response read")); }
+        Error<StreamError>.raise(Interrupted) => { close_tcp_best_effort(stream); finish raise_http_error(stream_interrupted_for_phase("TCP response read")); }
+        Error<StreamError>.raise(StreamHost(_)) => { close_tcp_best_effort(stream); finish raise_http_error(stream_host_for_phase("TCP response read")); }
     };
-    close(stream) with {
-        Error<StreamError>.raise(err) => {
-            finish raise_http_error(stream_transport_error("TCP stream close failed"));
-        }
-    };
+    close_tcp_best_effort(stream);
     let head = decode_response_head_checked(raw);
     validate_response_head(head);
     let response = decode_response_checked(raw);
@@ -201,7 +197,7 @@ flow execute_transport(encoded: bytes, request: HttpRequest) -> HttpResponse ![E
     if request.url.scheme == "https" {
         let tls = tls_connect(tcp, TlsHost { host = request.url.host }, TlsConfig {}) with {
             Error<StdTlsError>.raise(err) => {
-                close_tcp_after_error(tcp);
+                close_tcp_best_effort(tcp);
                 finish raise_http_error(tls_transport_error("TLS handshake failed"));
             }
         };

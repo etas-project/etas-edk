@@ -1,5 +1,5 @@
 version = 1
-manifest_fingerprint = "etas-lock-input:v1|package=edk-http-pure-surface|version=0.1.0|edition=2026|dependency:edk_http:import=edk.http,path=../../../../packages/edk-http|dependency:std:version=0.1"
+manifest_fingerprint = "etas-lock-input:v1|package=std-req-http-edk-request-contract|version=0.1.0|edition=2026|dependency:edk_http:import=edk.http,path=../../../../../packages/edk-http|dependency:std:version=0.1"
 
 [[package]]
 name = "edk-http"

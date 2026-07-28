@@ -9,7 +9,7 @@ import edk.http.action_payload.{lower_request as lower_action_request, lower_res
 import edk.http.body.{bytes, decode_text_lossy, decode_text_strict, response_bytes, response_text as body_response_text, text};
 import edk.http.client.new;
 import edk.http.client.defaults.{apply_client_config, default_config, default_options, default_request, no_redirects, normalize_request, request_with_body_options, request_with_options, timeout_millis, with_body_limit, with_checked_header, with_redirect_policy, with_timeout};
-import edk.http.errors.{HttpError, codec_error, network_transport_error, response_body_limit_error, response_body_read_error, stream_transport_error, tls_transport_error};
+import edk.http.errors.{HttpError, codec_error, network_transport_error, response_body_limit_error, stream_cancelled_for_phase, stream_closed_for_phase, stream_host_for_phase, stream_interrupted_for_phase, stream_limit_for_phase, stream_timeout_for_phase, stream_transport_error, tls_transport_error};
 import edk.http.headers.{can_user_set_header, count, find, find_response, is_managed_header_name, is_valid_header_name, is_valid_header_value, set, single_checked};
 import edk.http.handlers.preflight.preflight_request;
 import edk.http.mocks.routes.{match_route, route};
@@ -133,9 +133,16 @@ flow check_error_mappings() -> i32 ![] {
     let network = network_transport_error("TCP connect failed");
     let tls = tls_transport_error("TLS handshake failed");
     let stream = stream_transport_error("stream read failed");
-    let response_read = response_body_read_error("response body read failed");
     let response_limit = response_body_limit_error("response body exceeded configured body limit");
     let bad_status = codec_error("HTTP response status is invalid");
+    let timeout = stream_timeout_for_phase("TCP response read");
+    let cancelled = stream_cancelled_for_phase("TLS request write");
+    let closed = stream_closed_for_phase("TCP request flush");
+    let interrupted = stream_interrupted_for_phase("TLS stream close");
+    let limit = stream_limit_for_phase("TCP response read");
+    let host = stream_host_for_phase("TLS response read");
+    let tcp_close = stream_closed_for_phase("TCP stream close");
+    let tls_close = stream_interrupted_for_phase("TLS stream close");
 
     if codec.kind != "codec" { return 1; }
     if codec.message != "decode failed" { return 1; }
@@ -145,13 +152,23 @@ flow check_error_mappings() -> i32 ![] {
     if tls.message != "TLS handshake failed" { return 1; }
     if stream.kind != "stream" { return 1; }
     if stream.message != "stream read failed" { return 1; }
-    if response_read.kind != "response_body_read" { return 1; }
-    if response_read.message != "response body read failed" { return 1; }
     if response_limit.kind != "response_body_limit" { return 1; }
     if response_limit.message != "response body exceeded configured body limit" { return 1; }
     if bad_status.kind != "codec" { return 1; }
     if bad_status.message != "HTTP response status is invalid" { return 1; }
+    if timeout.kind != "timeout" || timeout.message != "TCP response read timed out" { return 1; }
+    if cancelled.kind != "cancelled" || cancelled.message != "TLS request write cancelled" { return 1; }
+    if closed.kind != "closed" || closed.message != "TCP request flush failed: stream closed" { return 1; }
+    if interrupted.kind != "interrupted" || interrupted.message != "TLS stream close interrupted" { return 1; }
+    if limit.kind != "response_body_limit" || limit.message != "TCP response read limit exceeded" { return 1; }
+    if host.kind != "stream" || host.message != "TLS response read failed" { return 1; }
+    if tcp_close.kind != "closed" || tcp_close.message != "TCP stream close failed: stream closed" { return 1; }
+    if tls_close.kind != "interrupted" || tls_close.message != "TLS stream close interrupted" { return 1; }
     return 0;
+}
+
+public flow check_phase2_stream_error_mapping_target(args: Array<string>) -> i32 ![] {
+    return check_error_mappings();
 }
 
 flow check_preflight_scope_and_url(request: HttpRequest) -> i32 ![] {

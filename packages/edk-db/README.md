@@ -20,7 +20,7 @@ Initial source modules:
 The current action family form is `EdkDb.query` and `EdkDb.exec`.
 `DatasourceRef` remains payload data until EDK introduces checked datasource
 evidence and package metadata can publish a typed static selector. The gap is
-tracked in `std-requirements/substrate-gaps.md`.
+tracked in `tests/std-requirements/substrate-gaps.md`.
 
 The higher-order `transaction(ds, body)` API is intentionally not implemented in
 this slice because callback latent-effect preservation is not available through

@@ -128,7 +128,7 @@ etas-edk/
   etas.toml             EDK workspace/package manifest
   packages/             one ordinary Etas package per domain
   tests/                positive, negative, smoke, blocked, and golden evidence
-  std-requirements/     substrate requirements discovered by package work
+    std-requirements/   substrate requirements discovered by package work
   examples/             reserved cross-package application examples
   docs/architect/       EDK and package architecture
 ```
@@ -151,7 +151,7 @@ etas run packages/edk-http
 Run package-specific verification when present. For HTTP:
 
 ```bash
-bash std-requirements/http/verify.sh
+bash tests/std-requirements/http/verify.sh
 ```
 
 Generated `.etas/`, lockfiles produced only for local probes, loopback state,
@@ -177,7 +177,7 @@ Before changing a public EDK API, update together:
 - [Package layout](docs/architect/package-layout.md)
 - [Package implementation design](docs/architect/package-implementation-design.md)
 - [Known SPEC drift](docs/architect/edk-vs-spec-outdated-areas.md)
-- [Standard substrate gaps](std-requirements/substrate-gaps.md)
+- [Standard substrate gaps](tests/std-requirements/substrate-gaps.md)
 
 Normative language design lives in the main repository:
 

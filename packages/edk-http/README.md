@@ -199,4 +199,4 @@ Relevant blockers:
 - `tests/blocked/edk-http-policy-templates.txt`
 - `tests/blocked/edk-http-mock-dry-run-trace.txt`
 - `tests/fixtures/negative/custom_action_scope_gap`
-- `std-requirements/substrate-gaps.md`
+- `tests/std-requirements/substrate-gaps.md`

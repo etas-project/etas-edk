@@ -118,7 +118,7 @@ Current blockers:
   `perform EdkProbe.request<request.host>(...)` supplies a runtime value where
   the action descriptor has zero static selectors. This is the expected
   fail-closed behavior.
-- `bash std-requirements/http/verify.sh` passes end to end. It covers the
+- `bash tests/std-requirements/http/verify.sh` passes end to end. It covers the
   `edk-http` package check, package runtime smoke, preflight/error contract
   runs, source assertions, effects assertions, external path-dependency effect
   facts, negative API-surface checks, empty-handler runtime fail-closed behavior,
@@ -429,9 +429,10 @@ transport handler applied by public APIs and delegated to `edk.http.transport`,
 which is checked through TCP/TLS/Stream substrate. The source path applies
 timeout/body-limit/retry/redirect defaults, rejects body-limit overflow in
 shared preflight, maps TCP/TLS/stream/codec errors to `HttpError` through
-tested pure constructors, maps response-body read failures to
-`response_body_read`, maps `LimitExceeded` to `response_body_limit`, and decodes
-response body bytes through the public std text codec. Remaining HTTP runtime
+tested pure constructors, distinguishes timeout, cancellation, closure,
+interruption, host-stream, and `response_body_limit` failures with transport
+phase messages, and decodes response body bytes through the public std text
+codec. Remaining HTTP runtime
 success outside explicitly authorized loopback requires configured host
 authorization; no-allow-net runs fail closed rather than using a EDK fallback.
 Negative fixtures keep high-level private HTTP clients, empty handlers, and
