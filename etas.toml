@@ -13,6 +13,7 @@ members = [
   "packages/edk-pdf",
   "packages/edk-docs",
   "packages/edk-eval",
+  "packages/edk-json",
 ]
 
 [workspace.dependencies]
