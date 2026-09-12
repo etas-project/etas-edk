@@ -1,0 +1,93 @@
+{
+  "dataset_audits": [
+    {
+      "split": "dev",
+      "mode": "audit-existing-whole",
+      "groups": 278,
+      "questions": 1668,
+      "equal": true,
+      "input_sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+      "output_sha256": "3b2fcb601a12218622448607bc30cfaa6a0b258f74ab27c9975d02aab2995b4e"
+    },
+    {
+      "split": "dev",
+      "mode": "audit-existing-reader",
+      "groups": 278,
+      "questions": 1668,
+      "equal": true,
+      "input_sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+      "output_sha256": "2ac9850b6e4d685341dad4ac3fa6b032861cf121c27f890d1718e642e66f47db"
+    },
+    {
+      "split": "dev",
+      "mode": "audit-existing-files",
+      "groups": 278,
+      "questions": 1668,
+      "equal": true,
+      "input_sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+      "output_sha256": "2ac9850b6e4d685341dad4ac3fa6b032861cf121c27f890d1718e642e66f47db"
+    },
+    {
+      "split": "train",
+      "mode": "audit-existing-whole",
+      "groups": 2201,
+      "questions": 13215,
+      "equal": true,
+      "input_sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+      "output_sha256": "13711bb59cadc122bbbe5b84f41b11eca9e6de8021ce2529c3c5ee6872236402"
+    },
+    {
+      "split": "train",
+      "mode": "audit-existing-reader",
+      "groups": 2201,
+      "questions": 13215,
+      "equal": true,
+      "input_sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+      "output_sha256": "1c4d014ef9919f5b5043a82ee9960268f400d7895a8dfbdd91b59a80c47c04a0"
+    },
+    {
+      "split": "train",
+      "mode": "audit-existing-files",
+      "groups": 2201,
+      "questions": 13215,
+      "equal": true,
+      "input_sha256": "2df6e722cdbaaa37efcbfb280f5c9a15be29a6ec18f618ef936fe63cc6d07c69",
+      "output_sha256": "1c4d014ef9919f5b5043a82ee9960268f400d7895a8dfbdd91b59a80c47c04a0"
+    }
+  ],
+  "escape_strings": {
+    "dev": {
+      "strings": 47739,
+      "with_backslash": 0,
+      "with_quote": 32,
+      "with_forward_slash": 529
+    },
+    "train": {
+      "strings": 378175,
+      "with_backslash": 0,
+      "with_quote": 271,
+      "with_forward_slash": 4394
+    }
+  },
+  "source_literal": {
+    "original_source": "    if check(\"[\\\"a\\\\\\\\\\\\\\\"b\\\", \\\"c\\\"]\", [\"\\\"a\\\\\\\\\\\\\\\"b\\\"\", \"\\\"c\\\"\"], 2) != 0 {",
+    "etas_decoded_input": "[\"a\\\\\\\\\\\\\"b\", \"c\"]",
+    "json_validation": "Expecting ',' delimiter: line 1 column 11 (char 10)"
+  },
+  "current_cli_escape_checks": [
+    {
+      "mode": "smoke",
+      "unique_strings": 281,
+      "input_bytes": 132321,
+      "equal": true,
+      "cli_sha256": "50fc2056aa2d947e0070723ba518be3522fa4c7a2271c946215f3db25e31700f"
+    },
+    {
+      "mode": "reader-json",
+      "unique_strings": 281,
+      "input_bytes": 132321,
+      "equal": true,
+      "cli_sha256": "50fc2056aa2d947e0070723ba518be3522fa4c7a2271c946215f3db25e31700f"
+    }
+  ]
+}
