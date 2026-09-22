@@ -1,0 +1,150 @@
+{
+  "date": "2026-09-22",
+  "binary_sha256": "50fc2056aa2d947e0070723ba518be3522fa4c7a2271c946215f3db25e31700f",
+  "checks": [
+    {
+      "name": "check",
+      "command": [
+        "/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas",
+        "check",
+        "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json",
+        "--all",
+        "--format",
+        "json"
+      ],
+      "exit": 0,
+      "stdout": "{\"command\":\"check\",\"files\":[{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/experiment/statistics.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/arena.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/binary64.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/compare.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/parser.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/probe.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/reader.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/reader_probe.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/serializer.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/tatqa.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/types.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/unicode.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/json/util.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/material/cli.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/material/number.es\"},{\"diagnostics\":[],\"path\":\"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/src/edk/material/service.es\"}]}\n",
+      "stderr": "",
+      "seconds": 6.209
+    },
+    {
+      "name": "probe_before_assertion_sync",
+      "command": [
+        "python3",
+        "-B",
+        "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tests/verify_probe.py",
+        "--etas",
+        "/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas"
+      ],
+      "exit": 1,
+      "stdout": "{\"success\": false, \"command\": [\"/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas\", \"run\", \"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json\", \"--allow-effects\", \"--format\", \"json\", \"--args\", \"probe\"], \"cli\": \"/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas\", \"cli_sha256\": \"50fc2056aa2d947e0070723ba518be3522fa4c7a2271c946215f3db25e31700f\", \"package_sha256_before\": \"312ce3d284bf577a89076d4781d34a4ef28d71de0eda1e3edaa518d47ee02e39\", \"process_exit\": 0, \"stderr\": \"\", \"value\": 26, \"error\": \"reader probe returned 26; expected 0\", \"verification_seconds\": 2.149}\n",
+      "stderr": "",
+      "seconds": 2.24,
+      "resolved_by": "probe_after_assertion_sync"
+    },
+    {
+      "name": "unicode",
+      "command": [
+        "python3",
+        "-B",
+        "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tests/unicode_oracle.py"
+      ],
+      "exit": 0,
+      "stdout": "{\"passed\": true, \"valid\": 38, \"invalid\": 38, \"probe\": \"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tmp/native-unicode-ux9ahb1r\"}\n",
+      "stderr": "",
+      "seconds": 1.132
+    },
+    {
+      "name": "compare",
+      "command": [
+        "python3",
+        "-B",
+        "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tests/compare_oracle.py"
+      ],
+      "exit": 0,
+      "stdout": "{\"passed\": true, \"cases\": 18, \"binary64_cases\": 23, \"probe\": \"/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tmp/native-compare-3syk36vo\"}\n",
+      "stderr": "",
+      "seconds": 94.902
+    },
+    {
+      "name": "material",
+      "command": [
+        "python3",
+        "-B",
+        "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json/tests/material_oracle.py",
+        "--etas",
+        "/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas",
+        "--material",
+        "/home/zhangpuyang/etas-project/tatqa-materials-v1/dev/000014.json"
+      ],
+      "exit": 0,
+      "stdout": "material ETAS regression ok\n",
+      "stderr": "",
+      "seconds": 90.81
+    },
+    {
+      "name": "probe_after_assertion_sync",
+      "passed": true,
+      "report": "probe-20260922.verification.json"
+    }
+  ],
+  "full_dataset_rerun": false,
+  "paid_requests": 0,
+  "source_sha256_at_initial_checks": {
+    "src/edk/experiment/statistics.es": "fa79a5aa530137ceb35c70fb06b4db482178db1d1cfffaaa1d5f0f33b4c84199",
+    "src/edk/json/arena.es": "19ea6ca4f5a50c7bae459c6420e7a4c1182839441ee1df8d44fa569d66701146",
+    "src/edk/json/binary64.es": "04da90214042ac8cfe9c9b0224dc607fca6f30e48f11f4bb431a98b6a161f13d",
+    "src/edk/json/compare.es": "638d662b47e4c81b9f8e6811c8e08c5100c6cbd87878f337c5037897e27b9468",
+    "src/edk/json/parser.es": "55ad443846803c1413b2113cefcab2a65022ca0c44e1e6c76322c682cf5128c0",
+    "src/edk/json/probe.es": "6bd1ec50826b2a54bf8fb056577710599fcc42539dc835cb8ca3692a68e62f87",
+    "src/edk/json/reader.es": "085bcd738ceb8b37ff7cb590dafdc34f768cb07a3954aba24c5429e38d3e6168",
+    "src/edk/json/reader_probe.es": "0dfa5ee964a74e1442db8a5303221ef8000e42bc5f8297a765334d1a7242285b",
+    "src/edk/json/serializer.es": "6040922db4953628a34f82794d687ec6dd02022213e1cd1cbde698e2a473501a",
+    "src/edk/json/tatqa.es": "ac6447935340f16cc173f27e99f0d42a8d8fc9b2155bd55c74a18b50ca0ab8c2",
+    "src/edk/json/types.es": "9602349aa0a7aaff7460df2fd00aa670aadc57920018d5162599054f42da5392",
+    "src/edk/json/unicode.es": "65bba4e51190000a94d8f9475e99d33161927bc78f97032f2b08ddd94e0bf0e0",
+    "src/edk/json/util.es": "1df65cfd3470a65a7e453c585c4e42bc57ea9bc850a64db22c36f2f6cc2f520f",
+    "src/edk/material/cli.es": "e1ff4908e3053a40df879399dca544e8ab6a73479979742f3bba11edeade902f",
+    "src/edk/material/number.es": "18d3b2802e29660d60c133be13fb5a500d065c502a689211d5698a15acfe1321",
+    "src/edk/material/service.es": "c9d9d41cb701aa0d7d78ec969ce2c7564f9ab1ab484e94b0a9586a22b3cdb348"
+  },
+  "source_sha256": {
+    "src/edk/experiment/statistics.es": "fa79a5aa530137ceb35c70fb06b4db482178db1d1cfffaaa1d5f0f33b4c84199",
+    "src/edk/json/arena.es": "19ea6ca4f5a50c7bae459c6420e7a4c1182839441ee1df8d44fa569d66701146",
+    "src/edk/json/binary64.es": "04da90214042ac8cfe9c9b0224dc607fca6f30e48f11f4bb431a98b6a161f13d",
+    "src/edk/json/compare.es": "638d662b47e4c81b9f8e6811c8e08c5100c6cbd87878f337c5037897e27b9468",
+    "src/edk/json/parser.es": "55ad443846803c1413b2113cefcab2a65022ca0c44e1e6c76322c682cf5128c0",
+    "src/edk/json/probe.es": "7d8e6bee61081c2c0af23adf45f9395fd056326b5adcf4173adf71144f19c5b4",
+    "src/edk/json/reader.es": "085bcd738ceb8b37ff7cb590dafdc34f768cb07a3954aba24c5429e38d3e6168",
+    "src/edk/json/reader_probe.es": "0dfa5ee964a74e1442db8a5303221ef8000e42bc5f8297a765334d1a7242285b",
+    "src/edk/json/serializer.es": "6040922db4953628a34f82794d687ec6dd02022213e1cd1cbde698e2a473501a",
+    "src/edk/json/tatqa.es": "ac6447935340f16cc173f27e99f0d42a8d8fc9b2155bd55c74a18b50ca0ab8c2",
+    "src/edk/json/types.es": "9602349aa0a7aaff7460df2fd00aa670aadc57920018d5162599054f42da5392",
+    "src/edk/json/unicode.es": "65bba4e51190000a94d8f9475e99d33161927bc78f97032f2b08ddd94e0bf0e0",
+    "src/edk/json/util.es": "1df65cfd3470a65a7e453c585c4e42bc57ea9bc850a64db22c36f2f6cc2f520f",
+    "src/edk/material/cli.es": "e1ff4908e3053a40df879399dca544e8ab6a73479979742f3bba11edeade902f",
+    "src/edk/material/number.es": "fc7b3e37a9b374bf2c224ad3d4d8e1a15fb3c4037de0a6af0a040213a6e79eaf",
+    "src/edk/material/service.es": "c9d9d41cb701aa0d7d78ec969ce2c7564f9ab1ab484e94b0a9586a22b3cdb348"
+  },
+  "source_changes_after_initial_checks": [
+    "src/edk/json/probe.es",
+    "src/edk/material/number.es"
+  ],
+  "passed": true,
+  "notes": [
+    "The initial probe still rejected supported backspace/formfeed escapes (returned 26). Only this assertion was updated, including a serialization round-trip check; the final probe completed with i32 0.",
+    "Production ETAS sources were unchanged between the full check, Unicode, comparator, material tests and the final probe.",
+    "Temporary standalone oracle packages remain ignored under tmp; this report records their commands and source fingerprints.",
+    "Full TAT-QA dataset performance measurements were not repeated.",
+    "After validation, one trailing space in material/number.es was removed for git diff --check. Token sequence was verified unchanged; source_sha256 records the cleaned files and source_sha256_at_final_probe retains the tested byte hashes."
+  ],
+  "source_sha256_at_final_probe": {
+    "src/edk/experiment/statistics.es": "fa79a5aa530137ceb35c70fb06b4db482178db1d1cfffaaa1d5f0f33b4c84199",
+    "src/edk/json/arena.es": "19ea6ca4f5a50c7bae459c6420e7a4c1182839441ee1df8d44fa569d66701146",
+    "src/edk/json/binary64.es": "04da90214042ac8cfe9c9b0224dc607fca6f30e48f11f4bb431a98b6a161f13d",
+    "src/edk/json/compare.es": "638d662b47e4c81b9f8e6811c8e08c5100c6cbd87878f337c5037897e27b9468",
+    "src/edk/json/parser.es": "55ad443846803c1413b2113cefcab2a65022ca0c44e1e6c76322c682cf5128c0",
+    "src/edk/json/probe.es": "7d8e6bee61081c2c0af23adf45f9395fd056326b5adcf4173adf71144f19c5b4",
+    "src/edk/json/reader.es": "085bcd738ceb8b37ff7cb590dafdc34f768cb07a3954aba24c5429e38d3e6168",
+    "src/edk/json/reader_probe.es": "0dfa5ee964a74e1442db8a5303221ef8000e42bc5f8297a765334d1a7242285b",
+    "src/edk/json/serializer.es": "6040922db4953628a34f82794d687ec6dd02022213e1cd1cbde698e2a473501a",
+    "src/edk/json/tatqa.es": "ac6447935340f16cc173f27e99f0d42a8d8fc9b2155bd55c74a18b50ca0ab8c2",
+    "src/edk/json/types.es": "9602349aa0a7aaff7460df2fd00aa670aadc57920018d5162599054f42da5392",
+    "src/edk/json/unicode.es": "65bba4e51190000a94d8f9475e99d33161927bc78f97032f2b08ddd94e0bf0e0",
+    "src/edk/json/util.es": "1df65cfd3470a65a7e453c585c4e42bc57ea9bc850a64db22c36f2f6cc2f520f",
+    "src/edk/material/cli.es": "e1ff4908e3053a40df879399dca544e8ab6a73479979742f3bba11edeade902f",
+    "src/edk/material/number.es": "18d3b2802e29660d60c133be13fb5a500d065c502a689211d5698a15acfe1321",
+    "src/edk/material/service.es": "c9d9d41cb701aa0d7d78ec969ce2c7564f9ab1ab484e94b0a9586a22b3cdb348"
+  },
+  "source_commit": "f221d70baa22670ba823d5bbd09ebe3585ec3ca5"
+}
