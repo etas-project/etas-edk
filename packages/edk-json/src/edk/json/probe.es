@@ -68,7 +68,10 @@ public flow main(args: Array<string>) -> i32 ![Error<IndexError>] {
     if !empty_array.cursor.ok || !empty_object.cursor.ok { return 16; }
     if invalid.cursor.ok || truncated.cursor.ok || trailing.cursor.ok { return 17; }
     if !nested_empty_array.cursor.ok || stringify(nested_empty_array.cursor.document) != "[[],1]" { return 22; }
-    if escaped_bf.cursor.ok || raw_newline.cursor.ok { return 26; }
+    if !escaped_bf.cursor.ok || raw_newline.cursor.ok { return 26; }
+    if stringify(escaped_bf.cursor.document) != "[" + "\"" + back + "b" + back + "f" + "\"" + "]" {
+        return 27;
+    }
     if !nested_empty_object.cursor.ok || stringify(nested_empty_object.cursor.document) != "[{},1]" { return 23; }
     if !empty_fields.cursor.ok || stringify(empty_fields.cursor.document) != "{\"a\":[],\"b\":2}" { return 25; }
     let escaped_value = field(escaped_parse.cursor.document, escaped_parse.cursor.document.root, "s");
