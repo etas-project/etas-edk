@@ -3,6 +3,7 @@ module edk.json.serializer;
 import std.text.{join, split};
 import edk.json.types.JsonDocument;
 import edk.json.arena.node;
+import edk.json.unicode.{is_control, control_code, control};
 
 flow bs() -> string ![Error<IndexError>] {
     return split("\\", "")[1];
@@ -15,9 +16,9 @@ flow escaped(value: string) -> string ![Error<IndexError>] {
             pieces = pieces.push(bs() + "\"");
         } else if ch == bs() {
             pieces = pieces.push(bs() + bs());
-        } else if ch == "\b" {
+        } else if ch == control(8) {
             pieces = pieces.push(bs() + "b");
-        } else if ch == "\f" {
+        } else if ch == control(12) {
             pieces = pieces.push(bs() + "f");
         } else if ch == "\n" {
             pieces = pieces.push(bs() + "n");
@@ -25,6 +26,10 @@ flow escaped(value: string) -> string ![Error<IndexError>] {
             pieces = pieces.push(bs() + "r");
         } else if ch == "\t" {
             pieces = pieces.push(bs() + "t");
+        } else if is_control(ch) {
+            let digits = split("0123456789abcdef", "");
+            let code = control_code(ch);
+            pieces = pieces.push(bs() + "u00" + digits[code / 16 + 1] + digits[code % 16 + 1]);
         } else {
             pieces = pieces.push(ch);
         }

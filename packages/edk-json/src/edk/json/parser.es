@@ -1,6 +1,7 @@
 module edk.json.parser;
 
 import edk.json.util.count_chars;
+import edk.json.unicode.{decode as decode_unicode, control, is_control};
 import std.text.{join, split, to_string_i32};
 import edk.json.arena.{append, node, with_root};
 import edk.json.types.{JsonDocument, JsonNode};
@@ -165,7 +166,7 @@ flow string_value(c: Cursor) -> Parsed ![Error<IndexError>] {
             if escaped == "\"" || escaped == bs() || escaped == "/" {
                 pieces = pieces.push(escaped);
             } else if escaped == "b" || escaped == "f" {
-                return fail(current, "backspace/formfeed escape decoding unavailable at position " + to_string_i32(current.pos));
+                if escaped == "b" { pieces = pieces.push(control(8)); } else { pieces = pieces.push(control(12)); }
             } else if escaped == "n" {
                 pieces = pieces.push("\n");
             } else if escaped == "r" {
@@ -173,13 +174,30 @@ flow string_value(c: Cursor) -> Parsed ![Error<IndexError>] {
             } else if escaped == "t" {
                 pieces = pieces.push("\t");
             } else if escaped == "u" {
-                return fail(current, "unicode escape decoding unavailable at position " + to_string_i32(current.pos));
+                if current.pos + 4 >= current.length { return fail(current, "truncated unicode escape"); }
+                var width = 4;
+                var index = 2;
+                while index <= 5 limit Iterations(4) {
+                    if hex_value(current.chars[current.pos + index]) < 0 { return fail(current, "invalid unicode hex digit"); }
+                    index = index + 1;
+                }
+                let unit = unicode_unit(current);
+                if unit >= 55296 && unit <= 56319 {
+                    if current.pos + 10 >= current.length { return fail(current, "missing low surrogate"); }
+                    width = 10;
+                }
+                var raw = bs(); index = 0;
+                while index <= width limit Iterations(11) { raw = raw + current.chars[current.pos + 1 + index]; index = index + 1; }
+                let decoded = decode_unicode(raw);
+                if !decoded.ok { return fail(current, "invalid unicode escape or surrogate pair"); }
+                pieces = pieces.push(decoded.value);
+                current = advance_n(current, width);
             } else {
                 return fail(current, "invalid escape at position " + to_string_i32(current.pos));
             }
             current = advance(current);
         } else {
-            if ch == "\n" || ch == "\r" || ch == "\t" {
+            if is_control(ch) {
                 return fail(current, "unescaped control character at position " + to_string_i32(current.pos));
             }
             pieces = pieces.push(ch);
