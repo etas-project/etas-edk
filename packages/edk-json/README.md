@@ -1,15 +1,14 @@
 # edk-json
 
 JSON document parsing, access, construction, serialization and comparison for
-ETAS, with material access/calculation and experiment statistics helpers in the
-same package. The package version is `0.1.0`.
+ETAS. The package version is `0.1.0`.
 
 The document parser, reader and serializer are implemented in ETAS. Unicode
 escape decoding currently delegates a quoted escape fragment to
 `std.json.parse` and `std.json.stringify`, because the available runtime lacks
 a Unicode scalar constructor. This is not a wholly independent JSON parser.
-Python scripts are external development/test oracles, not production parsing
-or arithmetic implementations.
+Python scripts are external development/test oracles, not production JSON
+parsing implementations.
 
 ## Document API
 
@@ -105,25 +104,7 @@ by the existing Python replay baseline, not arbitrary mathematical equality:
 round-to-nearest, ties-to-even, including subnormals, signed zero and overflow
 to signed infinity keys. It requires an already validated JSON number; its
 keys are comparison representations, not JSON number output. This comparison
-path is separate from both the lossless number-text document model and the
-material calculator's fixed-point arithmetic.
-
-## Material and statistics helpers
-
-`edk.material.service` loads legacy TAT-QA or canonical multi-table materials,
-then searches and reads projected evidence with source coordinates.
-`edk.material.number` provides explicit-unit fixed-point calculations.
-Use `--flow material` for the CLI. See [Material access](README-material.md)
-for formats, commands, errors and calculation limits.
-
-`edk.experiment.statistics` provides `nonnegative`, `decimal`, `fraction` and
-`summarize`. Samples are nonnegative integer strings of at most 30 digits;
-summary loops are limited to 1,024 samples. Summaries retain input-order raw
-values and report count, min, max and an exact integer/half-integer median.
-Empty or invalid samples return `ok=false`. `decimal` expects nonnegative
-values. `fraction` expects nonnegative counts and emits six truncated decimal
-places, or `null` for a nonpositive denominator. No confidence intervals or
-controlled benchmark conclusions are implied.
+path is separate from the lossless number-text document model.
 
 ## Verification and integration status
 
@@ -134,7 +115,6 @@ Run from the repository root with `ETAS` set as above:
 python3 -B packages/edk-json/tests/verify_probe.py --etas "$ETAS"
 python3 -B packages/edk-json/tests/unicode_oracle.py
 python3 -B packages/edk-json/tests/compare_oracle.py
-python3 -B packages/edk-json/tests/material_oracle.py --etas "$ETAS"
 ```
 
 Always use the probe wrapper: the current CLI can return process status zero
@@ -157,16 +137,27 @@ historical evidence for their recorded source fingerprints. The full dataset
 and performance benchmarks were not rerun for the 2026-09-22 cleanup.
 Data preservation is not question-answering accuracy.
 
-### Native path dependency (verified 2026-09-25)
+### Financial modules moved (2026-09-25)
 
-The financial harness now uses `../etas-edk/packages/edk-json` as a native
-local path dependency. Its production ETAS source lives under `src/` and
-imports shared modules from the `edk` root; package locking, checking,
-running, replay and reports need no Python preparation, `.build` source
-assembly or manual copying of EDK sources. Python remains limited to external test
-oracles and drivers.
+Material loading, evidence projection, fixed-point calculations, the material CLI, and experiment statistics have moved to the financial harness under `src/financial/`. The harness owns their current code, CLI, regression oracle, and documentation; this package now contains JSON modules only. The 2026-09-22 material verification entries above describe the then-current source and remain historical records, not a retest of the migrated modules.
 
-This integration was verified with the fixed CLI
+
+The JSON-only package and the relocated harness were verified together on
+2026-09-25 using the fixed CLI listed below. All 14 checks passed, including
+clean native dependency loading, package checks, JSON probes, material and
+multi-table calculations, reports, loopback model-error tests, ten scripted
+task replays with independent answer checks, and eight saved real-model
+recordings. Replay matched requests, tool results, and final states; it does
+not change the business accuracy of those saved model answers. No new paid
+model requests were made.
+
+### Native path dependency baseline (2026-09-25; pre-finance-refactor)
+
+The 2026-09-25 native path-dependency acceptance predates the financial-module
+ownership move described above. This historical integration used
+`../etas-edk/packages/edk-json` as a local path dependency; the harness compiled
+its own `src/` tree and imported JSON modules from the `edk` root without Python
+source assembly. The fixed CLI used for that baseline was
 `/home/zhangpuyang/etas-project/native-dependency-acceptance-20260925/bin/etas`
 (SHA256 `0dbef4fcfb442ff55a125ee3cbe70ff776757e6652409bf952e2b2372bc8844d`)
 and these component revisions:
@@ -177,12 +168,13 @@ and these component revisions:
 | etas-core | `a7c85379dd31cd6a5d1c8097e6464fb6e3428312` |
 | etas-frontend | `3198ccfa14c395e6a25a1fe8e600f3f0529d8402` |
 | etas-interpreter | `2b373dd53b312b6200ca4c16f81bf265e5bd90f6` |
-| EDK package snapshot | `35a1ffb5d03f30ec9c8da52ccec3c46168b711de` |
+| EDK package snapshot (pre-finance-refactor) | `35a1ffb5d03f30ec9c8da52ccec3c46168b711de` |
 
-The EDK revision identifies the package snapshot used for verification;
-later documentation commits can advance the branch without changing that
-snapshot. The harness `etas.lock` records package content and metadata
-hashes, but a local path dependency does not pin the adjacent Git revision.
+The EDK revision identifies the historical pre-refactor package snapshot,
+not the current JSON-only source state. Later commits can advance the branch
+without changing that record. The harness `etas.lock` records package content
+and metadata hashes, but a local path dependency does not pin the adjacent Git
+revision.
 Older CLI builds without these fixes may fail package locking or standard-spec
 binding. The compiler fixes were verified on
 `perf/interpreter-values-checkpoints`.

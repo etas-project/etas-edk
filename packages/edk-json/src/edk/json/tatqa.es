@@ -11,7 +11,6 @@ import edk.json.probe.{main as probe_main};
 import edk.json.serializer.stringify;
 import edk.json.types.{JsonDocument, JsonNode};
 import edk.json.arena.node;
-import edk.material.cli.{main as material_main};
 
 type MaterialRoot;
 impl MaterialRoot ~ Region;
@@ -180,10 +179,6 @@ public flow files(args: Array<string>) -> i32 ![Error<IoError>, Error<IOError>, 
         return files_main(mode);
     }
     return 6;
-}
-
-public flow material(args: Array<string>) -> i32 ![Error<IoError>, Error<IndexError>] {
-    return material_main(args);
 }
 
 public flow main(args: Array<string>) -> i32 ![Error<IoError>, Error<IndexError>] {
