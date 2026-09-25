@@ -151,7 +151,8 @@ The [2026-09-22 verification](tests/results/cleanup-20260922.json) reran this
 oracle including that real material. Full TAT-QA dataset validation and
 performance measurements remain historical evidence under `tests/results/`.
 
-The same-package material flow remains the runnable entry. Normal EDK path
-dependencies and a standalone package remain affected by the existing
-standard-action selector metadata compatibility issue. The financial harness
-uses build-time source assembly; its runtime tool logic remains ETAS.
+The financial harness's material tools now import this package through a
+native local path dependency and the `edk` import root; they do not copy or
+rewrite package sources with Python. The verified CLI, exact component
+revisions, EDK snapshot and older-CLI limitation are listed in the main
+[native path dependency integration notes](README.md#native-path-dependency-verified-2026-09-25).
