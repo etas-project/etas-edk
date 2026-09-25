@@ -157,7 +157,32 @@ historical evidence for their recorded source fingerprints. The full dataset
 and performance benchmarks were not rerun for the 2026-09-22 cleanup.
 Data preservation is not question-answering accuracy.
 
-Normal EDK path-dependency integration remains affected by the existing
-standard-action selector metadata compatibility issue. The separate financial
-harness still uses build-time dependency source assembly. This cleanup does
-not repair the compiler/interpreter or change that integration boundary.
+### Native path dependency (verified 2026-09-25)
+
+The financial harness now uses `../etas-edk/packages/edk-json` as a native
+local path dependency. Its production ETAS source lives under `src/` and
+imports shared modules from the `edk` root; package locking, checking,
+running, replay and reports need no Python preparation, `.build` source
+assembly or manual copying of EDK sources. Python remains limited to external test
+oracles and drivers.
+
+This integration was verified with the fixed CLI
+`/home/zhangpuyang/etas-project/native-dependency-acceptance-20260925/bin/etas`
+(SHA256 `0dbef4fcfb442ff55a125ee3cbe70ff776757e6652409bf952e2b2372bc8844d`)
+and these component revisions:
+
+| Component | Revision |
+| --- | --- |
+| etas | `9f2e63f67ee9cc160a69ce79500d3d529d34217f` |
+| etas-core | `a7c85379dd31cd6a5d1c8097e6464fb6e3428312` |
+| etas-frontend | `3198ccfa14c395e6a25a1fe8e600f3f0529d8402` |
+| etas-interpreter | `2b373dd53b312b6200ca4c16f81bf265e5bd90f6` |
+| EDK package snapshot | `35a1ffb5d03f30ec9c8da52ccec3c46168b711de` |
+
+The EDK revision identifies the package snapshot used for verification;
+later documentation commits can advance the branch without changing that
+snapshot. The harness `etas.lock` records package content and metadata
+hashes, but a local path dependency does not pin the adjacent Git revision.
+Older CLI builds without these fixes may fail package locking or standard-spec
+binding. The compiler fixes were verified on
+`perf/interpreter-values-checkpoints`.
