@@ -426,7 +426,7 @@ run_file_contains "request bodies lower as bytes not text fallback" \
 run_file_contains "wire lowering injects checked content length" \
     src/edk/http/wire/lower_request.es \
     "content-length" \
-    "to_string_usize(body_length)" \
+    "from_usize(body_length)" \
     "lower_wire_headers(request.headers, request.url, request.body.length_bytes)"
 
 run_file_contains "wire lowering requests connection close" \
@@ -502,7 +502,7 @@ run_file_contains "transport closes open streams before raising source-visible e
 run_file_contains "transport enforces response body limit at read boundary" \
     src/edk/http/transport.es \
     "flow stream_limit(request: HttpRequest) -> StreamByteLimit ![Error<HttpError>]" \
-    "parse_i32(to_string_usize(request.body_limit.max_bytes))" \
+    "parse_i32(from_usize(request.body_limit.max_bytes))" \
     'response_body_limit_error("response body limit exceeds std.stream ByteLimit range")' \
     "let limit = stream_limit(request);" \
     "read_until_limit(stream, limit, stream_timeout(request))" \
