@@ -1,7 +1,7 @@
 module edk.http.wire.lower_request;
 
 import std.http.codec.{HttpHeader, HttpWireRequest};
-import std.text.{join, to_string_i32, to_string_usize};
+import std.text.{from_i32, from_usize, join};
 import edk.http.headers.build.{header_name, header_text_value, is_managed_header_name, user_header_name_value};
 import edk.http.pure.method.http_method_value;
 import edk.http.types.{EncodedRequest, Headers, HttpRequest, Url};
@@ -32,7 +32,7 @@ flow authority_host(url: Url) -> string ![] {
     if url.port == default_scheme_port(url.scheme) {
         return url.host;
     }
-    return join([url.host, ":", to_string_i32(url.port)], "");
+    return join([url.host, ":", from_i32(url.port)], "");
 }
 
 flow lower_wire_headers(headers: Headers, url: Url, body_length: usize) -> List<HttpHeader> ![] {
@@ -40,7 +40,7 @@ flow lower_wire_headers(headers: Headers, url: Url, body_length: usize) -> List<
     out = out.push(HttpHeader { name = "host", value = authority_host(url) });
     out = out.push(HttpHeader { name = "connection", value = "close" });
     if body_length > 0 {
-        out = out.push(HttpHeader { name = "content-length", value = to_string_usize(body_length) });
+        out = out.push(HttpHeader { name = "content-length", value = from_usize(body_length) });
     }
     for header in headers.entries limit Iterations(65536) {
         let name = user_header_name_value(header_name(header));

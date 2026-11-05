@@ -5,10 +5,10 @@ import edk.pdf.errors.PdfError;
 import edk.pdf.types.{CitationRef, PdfDocument, PdfTextSpan};
 import edk.workspace.effects.EdkWorkspace;
 import edk.workspace.types.WorkspaceRootPath;
-import std.text.{contains, join, starts_with, to_string_i32, trim};
+import std.text.{contains, from_i32, join, starts_with, trim};
 
 public flow citation_key(prefix: string, index: i32) -> string ![] {
-    return join([prefix, to_string_i32(index)], "-");
+    return join([prefix, from_i32(index)], "-");
 }
 
 public flow citation_from_span(key: string, span: PdfTextSpan) -> CitationRef ![] {

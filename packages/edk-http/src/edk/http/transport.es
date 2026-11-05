@@ -3,7 +3,7 @@ module edk.http.transport;
 import std.http.codec.{HttpWireResponse, HttpWireResponseHead, decode_response as decode_wire_response, decode_response_head as decode_wire_response_head, encode_request as encode_wire_request};
 import std.net.tcp.{Host as TcpHost, NetworkError, Port as TcpPort, TcpOptions, TcpStream, connect as tcp_connect};
 import std.stream.{ByteLimit as StreamByteLimit, LimitExceeded, StreamError, Timeout as StreamTimeout, close, flush, read_until_limit, write_all};
-import std.text.{parse_i32, to_string_usize};
+import std.text.{from_usize, parse_i32};
 import std.tls.{Host as TlsHost, TlsConfig, TlsError as StdTlsError, TlsStream, connect as tls_connect};
 import edk.http.errors.{codec_error, network_transport_error, response_body_limit_error, response_body_read_error, stream_transport_error, tls_transport_error};
 import edk.http.handlers.preflight.preflight_request;
@@ -82,7 +82,7 @@ flow stream_timeout(request: HttpRequest) -> Option<StreamTimeout> ![]
 
 flow stream_limit(request: HttpRequest) -> StreamByteLimit ![Error<HttpError>]
 {
-    let bytes = match parse_i32(to_string_usize(request.body_limit.max_bytes)) {
+    let bytes = match parse_i32(from_usize(request.body_limit.max_bytes)) {
         Ok(value) => value,
         Err(_) => raise_http_error(response_body_limit_error("response body limit exceeds std.stream ByteLimit range")),
     };
