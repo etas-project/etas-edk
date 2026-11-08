@@ -1,6 +1,6 @@
 module edk.json.probe;
 
-import std.text.{join, len as text_len, split, to_string_usize};
+import std.text.{join, len as text_len, split, from_usize};
 import edk.json.arena.{append, child, child_id, empty_document, field, node, with_root};
 import edk.json.parser.{parse};
 import edk.json.reader_probe.{main as reader_probe_main};
@@ -29,7 +29,7 @@ public flow main(args: Array<string>) -> i32 ![Error<IndexError>] {
     let rebuilt = join(parts, "");
     let back = split("\\", "")[1];
     let newline = "\n";
-    if to_string_usize(text_len(back)) != "1" { return 24; }
+    if from_usize(text_len(back)) != "1" { return 24; }
     let document = build_nested();
     let root = node(document, document.root);
     let array = field(document, document.root, "items");

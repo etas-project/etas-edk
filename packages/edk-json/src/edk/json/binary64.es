@@ -1,6 +1,6 @@
 module edk.json.binary64;
 
-import std.text.{split, join, lowercase, parse_i32, to_string_i32, starts_with};
+import std.text.{split, join, lowercase, parse_i32, from_i32, starts_with};
 
 flow size(a: Array<i32>) -> i32 ![] { var n = 0; for x in a limit Iterations(20000000) { n = n + 1; } return n; }
 flow strings(a: Array<string>) -> i32 ![] { var n = 0; for x in a limit Iterations(20000000) { n = n + 1; } return n; }
@@ -112,5 +112,5 @@ public flow key(raw: string) -> string ![Error<IndexError>] {
     if halfway > 0 || (halfway == 0 && significand % 2 == 1) { significand = significand + 1; }
     if exponent2 == 1023 && significand == 9007199254740992 { return sign + "inf"; }
     while significand % 2 == 0 limit Iterations(54) { significand = significand / 2; power = power + 1; }
-    return sign + decimal(significand) + "@" + to_string_i32(power);
+    return sign + decimal(significand) + "@" + from_i32(power);
 }

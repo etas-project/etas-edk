@@ -4,7 +4,7 @@ import std.io.{IOError as IoError, eprintln, println, read_all};
 import std.bytes.len as bytes_len;
 import std.codec.text.{Strict, utf8_decode};
 import std.fs.{IOError, Region, WorkspacePath, path, read_bytes};
-import std.text.{split, to_string_i32, to_string_usize, trim};
+import std.text.{split, from_i32, from_usize, trim};
 import edk.json.parser.parse;
 import edk.json.reader.{array_reader, next_item};
 import edk.json.probe.{main as probe_main};
@@ -165,9 +165,9 @@ flow files_main(mode: string) -> i32 ![Error<IoError>, Error<IOError>, Error<Ind
         files = files + 1;
     }
     if mode == "files-json" {
-        eprintln("EDK_FILES_COMPLETE files=" + to_string_i32(files));
+        eprintln("EDK_FILES_COMPLETE files=" + from_i32(files));
     } else {
-        println("{\"files\":" + to_string_i32(files) + ",\"bytes\":" + to_string_usize(total_bytes) + "}");
+        println("{\"files\":" + from_i32(files) + ",\"bytes\":" + from_usize(total_bytes) + "}");
         eprintln("EDK_FILES_READ_COMPLETE");
     }
     return 0;

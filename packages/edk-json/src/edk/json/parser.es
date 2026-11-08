@@ -2,7 +2,7 @@ module edk.json.parser;
 
 import edk.json.util.count_chars;
 import edk.json.unicode.{decode as decode_unicode, control, is_control};
-import std.text.{join, split, to_string_i32};
+import std.text.{join, split, from_i32};
 import edk.json.arena.{append, node, with_root};
 import edk.json.types.{JsonDocument, JsonNode};
 
@@ -99,7 +99,7 @@ flow literal(c: Cursor, expected: string, kind: string) -> Parsed ![Error<IndexE
     var index = 1;
     while index <= count_chars(split(expected, "")) limit Iterations(20000000) {
         if current.pos >= current.length || peek(current) != pieces[index] {
-            return fail(current, "invalid literal at position " + to_string_i32(current.pos));
+            return fail(current, "invalid literal at position " + from_i32(current.pos));
         }
         current = advance(current);
         index = index + 1;
@@ -160,7 +160,7 @@ flow string_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         if ch == bs() {
             current = advance(current);
             if current.pos >= current.length {
-                return fail(current, "truncated escape at position " + to_string_i32(current.pos));
+                return fail(current, "truncated escape at position " + from_i32(current.pos));
             }
             let escaped = peek(current);
             if escaped == "\"" || escaped == bs() || escaped == "/" {
@@ -193,18 +193,18 @@ flow string_value(c: Cursor) -> Parsed ![Error<IndexError>] {
                 pieces = pieces.push(decoded.value);
                 current = advance_n(current, width);
             } else {
-                return fail(current, "invalid escape at position " + to_string_i32(current.pos));
+                return fail(current, "invalid escape at position " + from_i32(current.pos));
             }
             current = advance(current);
         } else {
             if is_control(ch) {
-                return fail(current, "unescaped control character at position " + to_string_i32(current.pos));
+                return fail(current, "unescaped control character at position " + from_i32(current.pos));
             }
             pieces = pieces.push(ch);
             current = advance(current);
         }
     }
-    return fail(current, "unterminated string at position " + to_string_i32(current.pos));
+    return fail(current, "unterminated string at position " + from_i32(current.pos));
 }
 
 flow digits(value: string) -> bool ![] {
@@ -221,13 +221,13 @@ flow number_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         current = advance(current);
     }
     if current.pos >= current.length || !digits(peek(current)) {
-        return fail(current, "invalid number at position " + to_string_i32(current.pos));
+        return fail(current, "invalid number at position " + from_i32(current.pos));
     }
     if peek(current) == "0" {
         pieces = pieces.push("0");
         current = advance(current);
         if current.pos < current.length && digits(peek(current)) {
-            return fail(current, "leading zero at position " + to_string_i32(current.pos));
+            return fail(current, "leading zero at position " + from_i32(current.pos));
         }
     } else {
         while current.pos < current.length && digits(peek(current)) limit Iterations(20000000) {
@@ -239,7 +239,7 @@ flow number_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         pieces = pieces.push(".");
         current = advance(current);
         if current.pos >= current.length || !digits(peek(current)) {
-            return fail(current, "fraction requires digits at position " + to_string_i32(current.pos));
+            return fail(current, "fraction requires digits at position " + from_i32(current.pos));
         }
         while current.pos < current.length && digits(peek(current)) limit Iterations(20000000) {
             pieces = pieces.push(peek(current));
@@ -254,7 +254,7 @@ flow number_value(c: Cursor) -> Parsed ![Error<IndexError>] {
             current = advance(current);
         }
         if current.pos >= current.length || !digits(peek(current)) {
-            return fail(current, "exponent requires digits at position " + to_string_i32(current.pos));
+            return fail(current, "exponent requires digits at position " + from_i32(current.pos));
         }
         while current.pos < current.length && digits(peek(current)) limit Iterations(20000000) {
             pieces = pieces.push(peek(current));
@@ -267,7 +267,7 @@ flow number_value(c: Cursor) -> Parsed ![Error<IndexError>] {
 flow parse_value(c: Cursor) -> Parsed ![Error<IndexError>] {
     let current = skip(c);
     if current.pos >= current.length {
-        return fail(current, "expected value at position " + to_string_i32(current.pos));
+        return fail(current, "expected value at position " + from_i32(current.pos));
     }
     let ch = peek(current);
     if ch == "\"" {
@@ -291,7 +291,7 @@ flow parse_value(c: Cursor) -> Parsed ![Error<IndexError>] {
     if ch == "-" || digits(ch) {
         return number_value(current);
     }
-    return fail(current, "unexpected value at position " + to_string_i32(current.pos));
+    return fail(current, "unexpected value at position " + from_i32(current.pos));
 }
 
 flow clear_key(c: Cursor) -> Cursor ![] {
@@ -334,7 +334,7 @@ flow array_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         children = children.push(parsed.node_id);
         current = clear_key(skip(parsed.cursor));
         if current.pos >= current.length {
-            return fail(current, "unterminated array at position " + to_string_i32(current.pos));
+            return fail(current, "unterminated array at position " + from_i32(current.pos));
         }
         if peek(current) == "]" {
             let node = JsonNode { kind = "array", key = container_key, text = "", children = children };
@@ -353,7 +353,7 @@ flow array_value(c: Cursor) -> Parsed ![Error<IndexError>] {
             };
         }
         if peek(current) != "," {
-            return fail(current, "expected comma or ] at position " + to_string_i32(current.pos));
+            return fail(current, "expected comma or ] at position " + from_i32(current.pos));
         }
         current = clear_key(skip(advance(current)));
     }
@@ -385,7 +385,7 @@ flow object_value(c: Cursor) -> Parsed ![Error<IndexError>] {
     }
     while true limit Iterations(20000000) {
         if current.pos >= current.length || peek(current) != "\"" {
-            return fail(current, "object key must be string at position " + to_string_i32(current.pos));
+            return fail(current, "object key must be string at position " + from_i32(current.pos));
         }
         let key_result = string_value(current);
         if !key_result.cursor.ok {
@@ -394,7 +394,7 @@ flow object_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         let key_node = node(key_result.cursor.document, key_result.node_id);
         current = clear_key(skip(key_result.cursor));
         if current.pos >= current.length || peek(current) != ":" {
-            return fail(current, "expected colon at position " + to_string_i32(current.pos));
+            return fail(current, "expected colon at position " + from_i32(current.pos));
         }
         let value_cursor = Cursor {
             chars = current.chars,
@@ -412,7 +412,7 @@ flow object_value(c: Cursor) -> Parsed ![Error<IndexError>] {
         children = children.push(value_result.node_id);
         current = clear_key(skip(value_result.cursor));
         if current.pos >= current.length {
-            return fail(current, "unterminated object at position " + to_string_i32(current.pos));
+            return fail(current, "unterminated object at position " + from_i32(current.pos));
         }
         if peek(current) == "}" {
             let node = JsonNode { kind = "object", key = container_key, text = "", children = children };
@@ -431,7 +431,7 @@ flow object_value(c: Cursor) -> Parsed ![Error<IndexError>] {
             };
         }
         if peek(current) != "," {
-            return fail(current, "expected comma or } at position " + to_string_i32(current.pos));
+            return fail(current, "expected comma or } at position " + from_i32(current.pos));
         }
         current = clear_key(skip(advance(current)));
     }
@@ -444,7 +444,7 @@ public flow parse(input: string) -> Parsed ![Error<IndexError>] {
     }
     let current = skip(parsed.cursor);
     if current.pos != current.length {
-        return fail(current, "trailing input at position " + to_string_i32(current.pos));
+        return fail(current, "trailing input at position " + from_i32(current.pos));
     }
     let rooted = with_root(current.document, parsed.node_id);
     return Parsed {
