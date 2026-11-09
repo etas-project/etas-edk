@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "command": [
+    "/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas",
+    "run",
+    "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json",
+    "--allow-effects",
+    "--format",
+    "json",
+    "--args",
+    "probe"
+  ],
+  "cli": "/home/zhangpuyang/etas-project/interpreter-recheck.ttaidz/target/release/etas",
+  "cli_sha256": "50fc2056aa2d947e0070723ba518be3522fa4c7a2271c946215f3db25e31700f",
+  "package_sha256_before": "cba2b72f838f9507094ff5502b284f0632ee891b6a159ca8911d0e8f75f6e873",
+  "process_exit": 0,
+  "stderr": "",
+  "value": 0,
+  "package_sha256_after": "cba2b72f838f9507094ff5502b284f0632ee891b6a159ca8911d0e8f75f6e873",
+  "outcome": {
+    "kind": "completed"
+  },
+  "schema": "etas.cli.interpreter-report.v1",
+  "verification_seconds": 1.25
+}
