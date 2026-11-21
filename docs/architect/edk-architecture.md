@@ -205,6 +205,58 @@ blocked until a real typed JSON layer exists. This convenience must not be
 implemented by a compiler special case, `std.http.request`, or a package-private
 host call.
 
+## 2.3 Session Context Processing
+
+EDK/application source owns higher-level history selection, summarization,
+tokenizer/model/provider choice, prompts, quality validation and retention/retry
+policy. Etas supplies bounded typed messages/history, revision evidence,
+conditional publication, receipt reconciliation, ordinary checked model/tool
+calls, budgets, cancellation and trace. This does not require a new EDK package
+or a compiler-recognized summarizer abstraction.
+
+Implement the workflow with ordinary flows and existing layered package APIs:
+
+```text
+std.agent.session.history_page -> bounded history + revision fence
+  -> application selection/token counting
+  -> checked summary flow or Agent call
+  -> output/provenance validation
+  -> prepare_context -> operation reference bound to content/fence
+  -> publish_context -> confirmed outcome or unknown
+  -> reconcile_context when the publication outcome is uncertain
+```
+
+Keep selection and summary strategies separate from the storage adapter. Never
+run inference inside a database transaction or use a private Session host
+callback. A tokenizer may be an explicit library/provider dependency; absence
+must not become a fake exact token count. Provider usage and local estimates
+remain distinguishable, and existing model request limits still apply.
+
+Publication rejects stale history or context versions. The application chooses
+whether to reread/recompute and configures retention; Etas executes bounded
+retention, archival, deletion and storage compaction without generating content.
+Publishing context does not authorize implicit deletion. Unknown commit outcomes
+use query-only reconciliation, not unconditional retry. Persist operation evidence explicitly when recovery
+across a process crash is required. Cancellation may coexist with a committed
+publication and never implies rollback. `SessionContextContent` retains source
+history and producer provenance. Publication does not certify semantic accuracy
+or increase trust; ordinary validation and prompt-channel checks still apply.
+Receipts report actual backend durability, not an application assertion.
+
+The Session APIs and this ownership boundary are now specified in
+[Sessions And Conversations](../../../etas/docs/design/03-agents-tools-prompts-memory.md#33-sessions-and-conversations);
+see [Storage Design](../../../etas-core/docs/architect/etas-storage-design.md) for
+implementation contracts. EDK can target these public APIs; missing registration
+or behavior must be evidenced as an implementation gap, not a pending decision
+about whether Host should generate summaries. Do not add private host bindings,
+mock summaries or an automatic compactor fallback. `SummaryPlusRecent` without
+a published summary is a recent-only view with explicit absence; it never
+generates content or claims full history. Budget exhaustion follows limit
+semantics. Production EDK provider validation is separate from Etas core
+acceptance. Test context reuse,
+bounded reads, stale-publication conflicts, lost acknowledgements, cancellation,
+and absence of implicit deletion/model calls in the underlying storage API.
+
 ## 3. Dependency Direction
 
 ```text
