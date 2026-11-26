@@ -5,6 +5,11 @@ facade, public HTTP API, configured request construction, pure helpers, wire
 lowering/decoding, transport composition, mocks, and package implementation
 handlers.
 
+With CLI 0.22.7 and std 0.6.1, `etas run packages/edk-http` exercises
+header handling, HTTP wire conversion and preflight. Building this package
+as a path dependency currently exceeds the package metadata limit of
+1,000,000 definition-header nodes during `etas pkg update`.
+
 Primary public API:
 
 - `edk.http.get(url: string, options)`
