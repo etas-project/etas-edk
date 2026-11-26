@@ -1,0 +1,21 @@
+[package]
+name = "edk-json-api-probe"
+version = "0.1.0"
+edition = "2026"
+
+[source]
+root = "src"
+
+[dependencies]
+std = { version = "0.6" }
+edk_json = { path = "../../../../packages/edk-json", import = "edk.json" }
+
+[[bin]]
+name = "document"
+module = "probe"
+flow = "main"
+
+[[bin]]
+name = "reader"
+module = "probe"
+flow = "reader"

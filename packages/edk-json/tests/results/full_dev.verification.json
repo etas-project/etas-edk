@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "mode": "full-dev-execute-and-compare",
+  "command": [
+    "/home/zhangpuyang/etas-project/edk-json-cli-build.Gk8Swj/target/release/etas",
+    "run",
+    "/home/zhangpuyang/etas-project/etas-edk/packages/edk-json",
+    "--allow-effects",
+    "--format",
+    "text",
+    "--args",
+    "dev"
+  ],
+  "package_sha256": "72e66fc3e38c972c0a022372c65277d836bf0a1983e8327070bdad6b693f19e0",
+  "cli_sha256": "6aecb37f564ccf7b55cc3a9977116f392daed6e8ab7d319c9500d431a49ffd63",
+  "input_sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+  "output_sha256": "3b2fcb601a12218622448607bc30cfaa6a0b258f74ab27c9975d02aab2995b4e",
+  "seconds": 178.35803193971515,
+  "maxrss_kb": 1505416,
+  "groups": 278,
+  "questions": 1668,
+  "note": "Executed concurrently with reader train; wall time is not a controlled speed comparison."
+}

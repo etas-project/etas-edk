@@ -1,0 +1,17 @@
+{
+  "success": true,
+  "mode": "compare-existing-output",
+  "split": "dev",
+  "groups": 278,
+  "questions": 1668,
+  "input": "/home/zhangpuyang/tatqa-edk-json/repo/dataset_raw/tatqa_dataset_dev.json",
+  "output": "/home/zhangpuyang/etas-project/reader-validation/dev.jsonl",
+  "input_sha256": "8da095a819af6db3c14877c6df2d4d29960e41d1a63dd1fa853507bd2a616af5",
+  "output_sha256": "2ac9850b6e4d685341dad4ac3fa6b032861cf121c27f890d1718e642e66f47db",
+  "complete_marker": true,
+  "seconds_from_execution_time_file": 308.13,
+  "maxrss_kb_from_execution_time_file": 801600,
+  "package_sha256_observed_after_run": "72e66fc3e38c972c0a022372c65277d836bf0a1983e8327070bdad6b693f19e0",
+  "fingerprint_note": "No run-start fingerprint recorded for original reader run. Current sources match independent full-dev execution fingerprint observed during train.",
+  "comparison": "Full keys, order, scalar types, Decimal-exact values; duplicate keys/non-JSON constants rejected."
+}
