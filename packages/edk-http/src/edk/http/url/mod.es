@@ -53,7 +53,7 @@ public flow default_port_for_scheme(scheme: string) -> Port ![] {
 }
 
 flow raw_url_with_port(scheme: string, host: Host, port: Port, path_and_query: PathAndQuery) -> Url ![] {
-    return Url {
+    return {
         scheme = normalize_scheme(scheme),
         host = normalize_host(host),
         port = port,
@@ -62,7 +62,7 @@ flow raw_url_with_port(scheme: string, host: Host, port: Port, path_and_query: P
 }
 
 public flow public_url_value(url: PublicHttpUrl) -> Url ![] {
-    return Url {
+    return {
         scheme = url.scheme,
         host = url.host,
         port = url.port,

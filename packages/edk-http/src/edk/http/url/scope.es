@@ -14,7 +14,7 @@ public flow request_host_scope(url: Url) -> Host ![] {
 }
 
 public flow request_scope(method: HttpMethod, url: Url) -> HttpRequestScope ![] {
-    return HttpRequestScope {
+    return {
         method = normalize_http_method(method),
         scheme = url.scheme,
         host = url.host,

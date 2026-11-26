@@ -14,7 +14,7 @@ type StringPart = {
 
 flow count_strings(values: Array<string>) -> i32 ![] {
     var total = 0;
-    for value in values limit Iterations(65536) {
+    for value in values {
         total = total + 1;
     };
     return total;
@@ -22,7 +22,7 @@ flow count_strings(values: Array<string>) -> i32 ![] {
 
 flow string_at(values: Array<string>, target: i32) -> StringPart ![] {
     var index = 0;
-    for value in values limit Iterations(65536) {
+    for value in values {
         if index == target {
             return StringPart { found = true, value = value };
         }
@@ -34,7 +34,7 @@ flow string_at(values: Array<string>, target: i32) -> StringPart ![] {
 flow join_path_tail(parts: Array<string>) -> PathAndQuery ![] {
     var tail: Array<string> = [];
     var index = 0;
-    for value in parts limit Iterations(4096) {
+    for value in parts {
         if index > 0 {
             tail = tail.push(value);
         }
@@ -50,7 +50,7 @@ flow join_path_tail(parts: Array<string>) -> PathAndQuery ![] {
 flow join_tail(parts: Array<string>, delimiter: string) -> string ![] {
     var tail: Array<string> = [];
     var index = 0;
-    for value in parts limit Iterations(4096) {
+    for value in parts {
         if index > 0 {
             tail = tail.push(value);
         }
@@ -60,11 +60,11 @@ flow join_tail(parts: Array<string>, delimiter: string) -> string ![] {
 }
 
 flow empty_url() -> Url ![] {
-    return Url { scheme = "", host = "", port = 0, path_and_query = "" };
+    return { scheme = "", host = "", port = 0, path_and_query = "" };
 }
 
 flow partial_url(scheme: string, host: string, port: Port, path_and_query: string) -> Url ![] {
-    return Url { scheme = scheme, host = host, port = port, path_and_query = path_and_query };
+    return { scheme = scheme, host = host, port = port, path_and_query = path_and_query };
 }
 
 flow default_port_for_scheme(scheme: string) -> Port ![] {
@@ -105,7 +105,7 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
     let normalized = trim(input);
     let scheme_parts = split(normalized, "://");
     if count_strings(scheme_parts) < 2 {
-        return UrlParseResult {
+        return {
             ok = false,
             url = empty_url(),
             message = "missing scheme separator",
@@ -114,7 +114,7 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
 
     let scheme = normalize_scheme(string_at(scheme_parts, 0).value);
     if !is_supported_scheme(scheme) {
-        return UrlParseResult {
+        return {
             ok = false,
             url = partial_url(scheme, "", 0, ""),
             message = "unsupported scheme",
@@ -128,7 +128,7 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
     let rest_parts = split(before_query, "/");
     let authority_parts = split(string_at(rest_parts, 0).value, ":");
     if count_strings(authority_parts) > 2 {
-        return UrlParseResult {
+        return {
             ok = false,
             url = partial_url(scheme, "", 0, ""),
             message = "invalid host",
@@ -136,14 +136,14 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
     }
     let host = normalize_host(string_at(authority_parts, 0).value);
     if host == "" {
-        return UrlParseResult {
+        return {
             ok = false,
             url = partial_url(scheme, "", 0, ""),
             message = "missing host",
         };
     }
     if !is_valid_host(host) {
-        return UrlParseResult {
+        return {
             ok = false,
             url = partial_url(scheme, "", 0, ""),
             message = "invalid host",
@@ -154,14 +154,14 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
     if count_strings(authority_parts) == 2 {
         let port_text = trim(string_at(authority_parts, 1).value);
         if port_text == "" {
-            return UrlParseResult {
+            return {
                 ok = false,
                 url = partial_url(scheme, host, 0, ""),
                 message = "invalid port",
             };
         }
         if !is_decimal_port_text(port_text) {
-            return UrlParseResult {
+            return {
                 ok = false,
                 url = partial_url(scheme, host, 0, ""),
                 message = "invalid port",
@@ -172,7 +172,7 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
                 port = parsed_port;
             }
             Err(_) => {
-                return UrlParseResult {
+                return {
                     ok = false,
                     url = partial_url(scheme, host, 0, ""),
                     message = "invalid port",
@@ -180,7 +180,7 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
             }
         }
         if !is_valid_port(port) {
-            return UrlParseResult {
+            return {
                 ok = false,
                 url = partial_url(scheme, host, port, ""),
                 message = "invalid port",
@@ -190,16 +190,16 @@ public flow parse_url(input: string) -> UrlParseResult ![] {
 
     let path_and_query = append_query(join_path_tail(rest_parts), query);
     if !is_valid_path_and_query(path_and_query) {
-        return UrlParseResult {
+        return {
             ok = false,
             url = partial_url(scheme, host, port, ""),
             message = "invalid path",
         };
     }
 
-    return UrlParseResult {
+    return {
         ok = true,
-        url = Url {
+        url = {
             scheme = scheme,
             host = host,
             port = port,

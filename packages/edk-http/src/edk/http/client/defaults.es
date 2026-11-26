@@ -8,7 +8,7 @@ import edk.http.types.{AuthConfig, BodyLimit, CookiePolicy, HeaderValue, HttpCli
 import edk.http.url.public_url_value;
 
 public flow timeout_millis(millis: i32) -> Timeout ![] {
-    return Timeout { millis = millis };
+    return { millis = millis };
 }
 
 public flow default_timeout() -> Timeout ![] {
@@ -16,7 +16,7 @@ public flow default_timeout() -> Timeout ![] {
 }
 
 public flow body_limit_bytes(max_bytes: usize) -> BodyLimit ![] {
-    return BodyLimit { max_bytes = max_bytes };
+    return { max_bytes = max_bytes };
 }
 
 public flow default_body_limit() -> BodyLimit ![] {
@@ -24,42 +24,42 @@ public flow default_body_limit() -> BodyLimit ![] {
 }
 
 public flow default_redirect_policy() -> RedirectPolicy ![] {
-    return RedirectPolicy { follow = true, max_hops = 5 };
+    return { follow = true, max_hops = 5 };
 }
 
 public flow no_redirects() -> RedirectPolicy ![] {
-    return RedirectPolicy { follow = false, max_hops = 0 };
+    return { follow = false, max_hops = 0 };
 }
 
 public flow default_retry_policy() -> RetryPolicy ![] {
-    return RetryPolicy { max_attempts = 1, backoff_millis = 0 };
+    return { max_attempts = 1, backoff_millis = 0 };
 }
 
 public flow no_retries() -> RetryPolicy ![] {
-    return RetryPolicy { max_attempts = 1, backoff_millis = 0 };
+    return { max_attempts = 1, backoff_millis = 0 };
 }
 
 public flow default_tls_policy() -> TlsPolicy ![] {
-    return TlsPolicy { verify_peer = true, min_version = "1.2" };
+    return { verify_peer = true, min_version = "1.2" };
 }
 
 public flow no_proxy() -> ProxyConfig ![] {
-    return ProxyConfig {
+    return {
         enabled = false,
-        url = Url { scheme = "", host = "", port = 0, path_and_query = "" },
+        url = { scheme = "", host = "", port = 0, path_and_query = "" },
     };
 }
 
 public flow no_auth() -> AuthConfig ![] {
-    return AuthConfig { kind = "none", token_ref = "" };
+    return { kind = "none", token_ref = "" };
 }
 
 public flow default_cookie_policy() -> CookiePolicy ![] {
-    return CookiePolicy { enabled = false, store = "" };
+    return { enabled = false, store = "" };
 }
 
 public flow default_config() -> HttpClientConfig ![] {
-    return HttpClientConfig {
+    return {
         timeout = default_timeout(),
         body_limit = default_body_limit(),
         retry = default_retry_policy(),
@@ -73,7 +73,7 @@ public flow default_config() -> HttpClientConfig ![] {
 
 public flow default_options() -> RequestOptions ![] {
     let config = default_config();
-    return RequestOptions {
+    return {
         timeout = config.timeout,
         body_limit = config.body_limit,
         retry = config.retry,
@@ -82,11 +82,11 @@ public flow default_options() -> RequestOptions ![] {
 }
 
 public flow default_client() -> HttpClient ![] {
-    return HttpClient { config = default_config() };
+    return { config = default_config() };
 }
 
 public flow apply_options(request: HttpRequest, options: RequestOptions) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = normalize_http_method(request.method),
         url = request.url,
         headers = request.headers,
@@ -99,7 +99,7 @@ public flow apply_options(request: HttpRequest, options: RequestOptions) -> Http
 }
 
 public flow apply_client_config(client: HttpClient, request: HttpRequest) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = normalize_http_method(request.method),
         url = request.url,
         headers = request.headers,
@@ -112,7 +112,7 @@ public flow apply_client_config(client: HttpClient, request: HttpRequest) -> Htt
 }
 
 public flow normalize_request(request: HttpRequest) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = normalize_http_method(request.method),
         url = request.url,
         headers = request.headers,
@@ -125,7 +125,7 @@ public flow normalize_request(request: HttpRequest) -> HttpRequest ![] {
 }
 
 public flow request_with_options(method: HttpMethod, url: PublicHttpUrl, options: RequestOptions) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = normalize_http_method(method),
         url = public_url_value(url),
         headers = empty_headers(),
@@ -139,7 +139,7 @@ public flow request_with_options(method: HttpMethod, url: PublicHttpUrl, options
 
 public flow default_request(method: HttpMethod, url: PublicHttpUrl) -> HttpRequest ![] {
     let config = default_config();
-    return HttpRequest {
+    return {
         method = normalize_http_method(method),
         url = public_url_value(url),
         headers = empty_headers(),
@@ -152,7 +152,7 @@ public flow default_request(method: HttpMethod, url: PublicHttpUrl) -> HttpReque
 }
 
 public flow request_with_body_options(method: HttpMethod, url: PublicHttpUrl, body: RequestBody, options: RequestOptions) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = normalize_http_method(method),
         url = public_url_value(url),
         headers = empty_headers(),
@@ -166,7 +166,7 @@ public flow request_with_body_options(method: HttpMethod, url: PublicHttpUrl, bo
 
 public flow request_with_body(method: HttpMethod, url: PublicHttpUrl, body: RequestBody) -> HttpRequest ![] {
     let config = default_config();
-    return HttpRequest {
+    return {
         method = normalize_http_method(method),
         url = public_url_value(url),
         headers = empty_headers(),
@@ -179,7 +179,7 @@ public flow request_with_body(method: HttpMethod, url: PublicHttpUrl, body: Requ
 }
 
 public flow with_header(request: HttpRequest, name: UserHeaderName, value: HeaderValue) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = request.method,
         url = request.url,
         headers = set(request.headers, header(name, value)),
@@ -212,7 +212,7 @@ public flow with_checked_header(request: HttpRequest, name: string, value: strin
 }
 
 public flow with_timeout(request: HttpRequest, timeout: Timeout) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = request.method,
         url = request.url,
         headers = request.headers,
@@ -225,7 +225,7 @@ public flow with_timeout(request: HttpRequest, timeout: Timeout) -> HttpRequest 
 }
 
 public flow with_body_limit(request: HttpRequest, body_limit: BodyLimit) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = request.method,
         url = request.url,
         headers = request.headers,
@@ -238,7 +238,7 @@ public flow with_body_limit(request: HttpRequest, body_limit: BodyLimit) -> Http
 }
 
 public flow with_retry_policy(request: HttpRequest, retry: RetryPolicy) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = request.method,
         url = request.url,
         headers = request.headers,
@@ -251,7 +251,7 @@ public flow with_retry_policy(request: HttpRequest, retry: RetryPolicy) -> HttpR
 }
 
 public flow with_redirect_policy(request: HttpRequest, redirect: RedirectPolicy) -> HttpRequest ![] {
-    return HttpRequest {
+    return {
         method = request.method,
         url = request.url,
         headers = request.headers,

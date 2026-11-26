@@ -12,7 +12,7 @@ flow ends_with_text(value: string, suffix: string) -> bool ![] {
         return false;
     }
     var last = value;
-    for part in split(value, suffix) limit Iterations(65536) {
+    for part in split(value, suffix) {
         last = part;
     }
     return last == "";
@@ -49,7 +49,7 @@ public flow is_valid_host(host: Host) -> bool ![] {
     {
         return false;
     }
-    for label in split(normalized, ".") limit Iterations(128) {
+    for label in split(normalized, ".") {
         if !is_safe_host_label(label) {
             return false;
         }

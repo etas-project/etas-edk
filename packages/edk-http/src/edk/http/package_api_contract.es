@@ -24,7 +24,7 @@ flow checked_url(result: Result<PublicHttpUrl, HttpError>) -> PublicHttpUrl ![Er
 }
 
 flow trusted_header(name: string, value: string) -> Header ![] {
-    return HeaderSpec<UserHeaderName> {
+    return {
         name = user_header_name_evidence(name),
         value = header_value_evidence(value),
     };
@@ -81,15 +81,15 @@ flow check_post_request_preserves_body() -> i32 ![Error<HttpError>] {
 }
 
 flow check_request_options_preserved() -> i32 ![] {
-    let req = normalize_request(HttpRequest {
+    let req = normalize_request({
         method = patch_method(),
-        url = Url { scheme = "https", host = "example.com", port = 443, path_and_query = "/update" },
-        headers = Headers { entries = [trusted_header("Accept", "text/plain")] },
+        url = { scheme = "https", host = "example.com", port = 443, path_and_query = "/update" },
+        headers = { entries = [trusted_header("Accept", "text/plain")] },
         body = request_text("text/plain", "payload"),
-        timeout = Timeout { millis = 1234 },
-        body_limit = BodyLimit { max_bytes = 4321 },
-        retry = RetryPolicy { max_attempts = 3, backoff_millis = 250 },
-        redirect = RedirectPolicy { follow = false, max_hops = 0 },
+        timeout = { millis = 1234 },
+        body_limit = { max_bytes = 4321 },
+        retry = { max_attempts = 3, backoff_millis = 250 },
+        redirect = { follow = false, max_hops = 0 },
     });
     if http_method_value(req.method) != "PATCH" { return 1; }
     if req.timeout.millis != 1234 { return 1; }
