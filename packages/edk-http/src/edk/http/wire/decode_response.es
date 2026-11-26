@@ -1,8 +1,9 @@
 module edk.http.wire.decode_response;
 
-import std.codec.text.{InvalidUtf8, Replace, Strict, utf8_decode, utf8_encode};
+import std.codec.text.{Replace, utf8_decode, utf8_encode};
 import std.http.codec.{HttpHeader, HttpWireResponse, HttpWireResponseHead};
-import edk.http.errors.{HttpError, codec_error};
+import std.text.{lowercase, trim};
+import edk.http.errors.HttpError;
 import edk.http.pure.status.is_valid_status;
 import edk.http.types.{DecodedResponse, HttpResponse, ResponseBody, ResponseHeader, ResponseHeaders};
 
@@ -12,7 +13,7 @@ flow raise_http_error(error: HttpError) -> never ![Error<HttpError>]
 }
 
 flow response_body(media_type: string, body: string) -> ResponseBody ![] {
-    return ResponseBody {
+    return {
         media_type = media_type,
         raw = utf8_encode(body),
         text = body,
@@ -24,40 +25,27 @@ flow raw_response_body(media_type: string, raw: bytes) -> ResponseBody ![] {
         Ok(text) => text,
         Err(_) => "",
     };
-    return ResponseBody {
+    return {
         media_type = media_type,
         raw = raw,
         text = decoded,
     };
 }
 
-flow strict_response_body(media_type: string, raw: bytes) -> Result<ResponseBody, HttpError> ![]
-{
-    return match utf8_decode(raw, Strict) {
-        Ok(text) => Ok(ResponseBody {
-            media_type = media_type,
-            raw = raw,
-            text = text,
-        }),
-        Err(InvalidUtf8) => Err(codec_error("HTTP response body is not valid UTF-8")),
-        Err(_) => Err(codec_error("HTTP response body text decoding failed")),
-    };
-}
-
 flow response_headers(head: HttpWireResponseHead) -> ResponseHeaders ![] {
     var entries: Array<ResponseHeader> = [];
-    for header in head.headers limit Iterations(65536) {
-        entries = entries.push(ResponseHeader {
+    for header in head.headers {
+        entries = entries.push({
             name = header.name,
             value = header.value,
         });
     }
-    return ResponseHeaders { entries = entries };
+    return { entries = entries };
 }
 
 flow response_media_type(headers: ResponseHeaders) -> string ![] {
-    for header in headers.entries limit Iterations(65536) {
-        if header.name == "content-type" {
+    for header in headers.entries {
+        if lowercase(trim(header.name)) == "content-type" {
             return header.value;
         }
     }
@@ -65,7 +53,7 @@ flow response_media_type(headers: ResponseHeaders) -> string ![] {
 }
 
 public flow http_response_from_wire_head(head: HttpWireResponseHead, media_type: string, body: string) -> HttpResponse ![] {
-    return HttpResponse {
+    return {
         status = head.status,
         headers = response_headers(head),
         body = response_body(media_type, body),
@@ -74,7 +62,7 @@ public flow http_response_from_wire_head(head: HttpWireResponseHead, media_type:
 
 public flow http_response_from_wire(response: HttpWireResponse, body: string) -> HttpResponse ![] {
     let headers = response_headers(response.head);
-    return HttpResponse {
+    return {
         status = response.head.status,
         headers = headers,
         body = response_body(response_media_type(headers), body),
@@ -83,7 +71,7 @@ public flow http_response_from_wire(response: HttpWireResponse, body: string) ->
 
 public flow http_response_from_wire_bytes(response: HttpWireResponse) -> HttpResponse ![] {
     let headers = response_headers(response.head);
-    return HttpResponse {
+    return {
         status = response.head.status,
         headers = headers,
         body = raw_response_body(response_media_type(headers), response.body),
@@ -91,15 +79,7 @@ public flow http_response_from_wire_bytes(response: HttpWireResponse) -> HttpRes
 }
 
 public flow http_response_from_wire_bytes_checked(response: HttpWireResponse) -> Result<HttpResponse, HttpError> ![] {
-    let headers = response_headers(response.head);
-    return match strict_response_body(response_media_type(headers), response.body) {
-        Ok(body) => Ok(HttpResponse {
-            status = response.head.status,
-            headers = headers,
-            body = body,
-        }),
-        Err(error) => Err(error),
-    };
+    return Ok(http_response_from_wire_bytes(response));
 }
 
 public flow decode_response(status: i32, media_type: string, body: string) -> DecodedResponse ![] {
@@ -110,13 +90,13 @@ public flow decode_response(status: i32, media_type: string, body: string) -> De
         body,
     );
     if !is_valid_status(status) {
-        return DecodedResponse {
+        return {
             ok = false,
             response = response,
             message = "invalid status",
         };
     }
-    return DecodedResponse {
+    return {
         ok = true,
         response = response,
         message = "",
@@ -130,13 +110,13 @@ public flow response_from_text(status: i32, media_type: string, body: string) ->
 public flow response_from_wire_head(head: HttpWireResponseHead, media_type: string, body: string) -> DecodedResponse ![] {
     let response = http_response_from_wire_head(head, media_type, body);
     if !is_valid_status(head.status) {
-        return DecodedResponse {
+        return {
             ok = false,
             response = response,
             message = "invalid status",
         };
     }
-    return DecodedResponse {
+    return {
         ok = true,
         response = response,
         message = "",

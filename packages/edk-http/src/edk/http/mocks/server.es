@@ -5,11 +5,11 @@ import edk.http.types.{HttpRequest, HttpResponse, ResponseHeader, ResponseHeader
 
 flow empty_response_headers() -> ResponseHeaders ![] {
     let entries: Array<ResponseHeader> = [];
-    return ResponseHeaders { entries = entries };
+    return { entries = entries };
 }
 
 public flow response(status: i32, media_type: string, body: string) -> HttpResponse ![] {
-    return HttpResponse {
+    return {
         status = status,
         headers = empty_response_headers(),
         body = response_body(media_type, body),

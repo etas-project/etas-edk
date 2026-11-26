@@ -6,21 +6,22 @@ import edk.http.types.{Header, HeaderLookup, HeaderName, HeaderSpec, HeaderValue
 
 public flow empty_headers() -> Headers ![] {
     let entries: Array<Header> = [];
-    return Headers { entries = entries };
+    return { entries = entries };
 }
 
 public flow append(headers: Headers, item: Header) -> Headers ![] {
-    return Headers { entries = headers.entries.push(item) };
+    return { entries = headers.entries.push(item) };
 }
 
 public flow set(headers: Headers, item: Header) -> Headers ![] {
+    let wanted = lowercase(trim(user_header_name_value(header_name(item))));
     var entries: Array<Header> = [];
-    for existing in headers.entries limit Iterations(65536) {
-        if user_header_name_value(header_name(existing)) != user_header_name_value(header_name(item)) {
+    for existing in headers.entries {
+        if lowercase(trim(user_header_name_value(header_name(existing)))) != wanted {
             entries = entries.push(existing);
         }
     }
-    return Headers { entries = entries.push(item) };
+    return { entries = entries.push(item) };
 }
 
 public flow is_managed_header_name(name: string) -> bool ![] {
@@ -47,7 +48,7 @@ public flow user_header_name_value(name: UserHeaderName) -> string ![] {
 }
 
 flow raw_header_spec(name: UserHeaderName, value: HeaderValue) -> HeaderSpec<UserHeaderName> ![] {
-    return HeaderSpec<UserHeaderName> {
+    return {
         name = name,
         value = value,
     };
@@ -77,7 +78,7 @@ public flow single(name: UserHeaderName, value: HeaderValue) -> Headers ![] {
 
 public flow count(headers: Headers) -> i32 ![] {
     var total = 0;
-    for item in headers.entries limit Iterations(65536) {
+    for item in headers.entries {
         total = total + 1;
     }
     return total;
@@ -85,20 +86,20 @@ public flow count(headers: Headers) -> i32 ![] {
 
 public flow find(headers: Headers, name: string) -> HeaderLookup ![] {
     let wanted = lowercase(trim(name));
-    for item in headers.entries limit Iterations(65536) {
-        if user_header_name_value(header_name(item)) == wanted {
-            return HeaderLookup { found = true, value = header_text_value(item) };
+    for item in headers.entries {
+        if lowercase(trim(user_header_name_value(header_name(item)))) == wanted {
+            return { found = true, value = header_text_value(item) };
         }
     }
-    return HeaderLookup { found = false, value = "" };
+    return { found = false, value = "" };
 }
 
 public flow find_response(headers: ResponseHeaders, name: string) -> HeaderLookup ![] {
     let wanted = lowercase(trim(name));
-    for item in headers.entries limit Iterations(65536) {
-        if item.name == wanted {
-            return HeaderLookup { found = true, value = item.value };
+    for item in headers.entries {
+        if lowercase(trim(item.name)) == wanted {
+            return { found = true, value = item.value };
         }
     }
-    return HeaderLookup { found = false, value = "" };
+    return { found = false, value = "" };
 }

@@ -26,7 +26,7 @@ public alias MockMatch = {
 };
 
 flow empty_error() -> MockMatchError ![] {
-    return MockMatchError {
+    return {
         method = get_method(),
         host = "",
         target = "",
@@ -35,7 +35,7 @@ flow empty_error() -> MockMatchError ![] {
 }
 
 public flow route(method: HttpMethod, host: Host, target: PathAndQuery, response: HttpResponse) -> MockRoute ![] {
-    return MockRoute {
+    return {
         method = normalize_http_method(method),
         host = host,
         target = target,
@@ -44,7 +44,7 @@ public flow route(method: HttpMethod, host: Host, target: PathAndQuery, response
 }
 
 public flow matched(response: HttpResponse) -> MockMatch ![] {
-    return MockMatch {
+    return {
         matched = true,
         response_status = response.status,
         response_media_type = response.body.media_type,
@@ -54,12 +54,12 @@ public flow matched(response: HttpResponse) -> MockMatch ![] {
 }
 
 public flow unmatched(request: HttpRequest) -> MockMatch ![] {
-    return MockMatch {
+    return {
         matched = false,
         response_status = -1,
         response_media_type = "",
         response_text = "",
-        error = MockMatchError {
+        error = {
             method = normalize_http_method(request.method),
             host = request.url.host,
             target = request.url.path_and_query,
@@ -70,7 +70,7 @@ public flow unmatched(request: HttpRequest) -> MockMatch ![] {
 
 public flow match_route(routes: Array<MockRoute>, request: HttpRequest) -> MockMatch ![] {
     let method = normalize_http_method(request.method);
-    for item in routes limit Iterations(65536) {
+    for item in routes {
         if item.method == method
             && item.host == request.url.host
             && item.target == request.url.path_and_query

@@ -34,11 +34,10 @@ public spec HttpConnectTarget;
 public spec PublicNetworkTarget;
 public spec SupportedHttpMethod;
 
-impl PublicHttpUrl ~ HttpConnectTarget;
-impl PublicHttpUrl ~ PublicNetworkTarget;
-impl InternalHttpUrl ~ HttpConnectTarget;
-impl HttpMethod ~ SupportedHttpMethod;
-
+impl PublicHttpUrl ~ HttpConnectTarget {}
+impl PublicHttpUrl ~ PublicNetworkTarget {}
+impl InternalHttpUrl ~ HttpConnectTarget {}
+impl HttpMethod ~ SupportedHttpMethod {}
 public flow http_method_evidence(value: string) -> HttpMethod ![] {
     return HttpMethod { value = value };
 }
@@ -71,10 +70,9 @@ public type WireHeaderName = {
 public spec HttpHeaderName;
 public spec UserSettableHeader;
 
-impl UserHeaderName ~ HttpHeaderName;
-impl WireHeaderName ~ HttpHeaderName;
-impl UserHeaderName ~ UserSettableHeader;
-
+impl UserHeaderName ~ HttpHeaderName {}
+impl WireHeaderName ~ HttpHeaderName {}
+impl UserHeaderName ~ UserSettableHeader {}
 public flow header_name_evidence(value: string) -> HeaderName ![] {
     return HeaderName { value = value };
 }

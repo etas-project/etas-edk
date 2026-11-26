@@ -12,7 +12,7 @@ public flow client_config(
     cookie: CookiePolicy,
     redirect: RedirectPolicy,
 ) -> HttpClientConfig ![] {
-    return HttpClientConfig {
+    return {
         timeout = timeout,
         body_limit = body_limit,
         retry = retry,

@@ -33,19 +33,17 @@ flow parse_request_url(value: string) -> PublicHttpUrl ![Error<HttpError>] {
     };
 }
 
-let EdkHttpApiDefault: ![EdkHttp => Error<HttpError> for HttpActionResponse] = handler {
-    EdkHttp.request(request) => {
-        let internal = raise_request(request);
-        let method = internal.method;
-        let host = internal.url.host;
-        resume lower_response(execute_request(method, host, internal));
-    }
-};
-
 flow request(req: HttpRequest) -> HttpResponse ![EdkHttp.request, Error<HttpError>] {
     let normalized = normalize_request(req);
     ensure_preflight(normalized.method, normalized.url.host, normalized);
-    let response = perform EdkHttp.request(lower_request(normalized)) with EdkHttpApiDefault;
+    let response = perform EdkHttp.request(lower_request(normalized)) with {
+        EdkHttp.request(request) => {
+            let internal = raise_request(request);
+            let method = internal.method;
+            let host = internal.url.host;
+            resume lower_response(execute_request(method, host, internal));
+        }
+    };
     return raise_response(response);
 }
 

@@ -39,7 +39,7 @@ public flow header_value(value: string) -> Result<HeaderValue, HttpError> ![] {
 }
 
 flow raw_header_spec(name: UserHeaderName, value: HeaderValue) -> HeaderSpec<UserHeaderName> ![] {
-    return HeaderSpec<UserHeaderName> {
+    return {
         name = name,
         value = value,
     };
