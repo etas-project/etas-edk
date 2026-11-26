@@ -1,0 +1,43 @@
+{
+  "success": true,
+  "cli_sha256": "6aecb37f564ccf7b55cc3a9977116f392daed6e8ab7d319c9500d431a49ffd63",
+  "package_sha256": "3e08b168ff427958224cbdf77948da2faafde6e1373ce2af69682fe3220603ae",
+  "checks": [
+    {
+      "mode": "probe",
+      "success": true,
+      "runtime_config": false
+    },
+    {
+      "mode": "smoke",
+      "success": true,
+      "runtime_config": false
+    },
+    {
+      "mode": "reader-json",
+      "success": true,
+      "runtime_config": false
+    },
+    {
+      "mode": "files-json",
+      "flow": "files",
+      "success": true,
+      "materials": [
+        "train/000000.json",
+        "train/001742.json",
+        "train/001243.json"
+      ]
+    },
+    {
+      "mode": "files-read",
+      "flow": "files",
+      "success": true,
+      "materials": [
+        "train/000000.json",
+        "train/001742.json",
+        "train/001243.json"
+      ]
+    }
+  ],
+  "note": "Post-benchmark entry isolation; default modes work without filesystem configuration. File loop/parser/serializer unchanged from full measured run."
+}

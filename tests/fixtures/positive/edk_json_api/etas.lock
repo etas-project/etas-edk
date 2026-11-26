@@ -1,0 +1,20 @@
+version = 1
+manifest_fingerprint = "etas-lock-input:v1|package=edk-json-api-probe|version=0.1.0|edition=2026|dependency:edk_json:import=edk.json,path=../../../../packages/edk-json|dependency:std:version=0.6"
+
+[[package]]
+name = "edk-json"
+version = "0.1.0"
+source = "vendor+.etas/vendor/edk/json"
+checksum = "blake3:567dc53b86703fbcba3bd2d5d554b6bac810258fdd98e780391e59dbd800a5be"
+dependencies = ["std|std|0.6.1"]
+import_root = "edk.json"
+metadata_fingerprint = "blake3:3d5289e7c1bc6d43fd9b57bb56da8005b2245f1dd855f3cd8a33d44c79ceac9f"
+
+[[package]]
+name = "std"
+version = "0.6.1"
+source = "builtin"
+checksum = "builtin:std:artifact:0.6.1:blake3:c2620b315312e5c96f43d67f9160dd81048b8a030de13347e29442d9e30231e3"
+dependencies = []
+import_root = "std"
+metadata_fingerprint = "builtin:std:artifact:0.6.1:blake3:c2620b315312e5c96f43d67f9160dd81048b8a030de13347e29442d9e30231e3"
