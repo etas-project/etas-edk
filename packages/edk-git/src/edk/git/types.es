@@ -12,16 +12,14 @@ public alias GitRepoSpec = {
 
 public type GitRepoRef = GitRepoSpec;
 
-impl GitRepoRef ~ GitRepositoryTarget;
-
+impl GitRepoRef ~ GitRepositoryTarget {}
 public alias BranchSpec = {
     name: string,
 };
 
 public type BranchRef = BranchSpec;
 
-impl BranchRef ~ GitBranchTarget;
-
+impl BranchRef ~ GitBranchTarget {}
 public alias RemoteSpec = {
     name: string,
     url: string,
@@ -29,8 +27,7 @@ public alias RemoteSpec = {
 
 public type RemoteRef = RemoteSpec;
 
-impl RemoteRef ~ GitRemoteTarget;
-
+impl RemoteRef ~ GitRemoteTarget {}
 public alias GitStatusEntrySpec = {
     path: string,
     state: string,
@@ -38,8 +35,7 @@ public alias GitStatusEntrySpec = {
 
 public type GitStatusEntry = GitStatusEntrySpec;
 
-impl GitStatusEntry ~ GitStatusPath;
-
+impl GitStatusEntry ~ GitStatusPath {}
 public alias GitStatus = {
     branch: BranchRef,
     entries: Array<GitStatusEntry>,

@@ -18,7 +18,7 @@ public flow patch_path_token_escapes_repo(token: string) -> bool ![] {
     if contains(value, "\n") || contains(value, "\r") || contains(value, "\t") {
         return true;
     }
-    for part in split(value, "/") limit Iterations(128) {
+    for part in split(value, "/") {
         if part == ".." {
             return true;
         }
@@ -27,7 +27,7 @@ public flow patch_path_token_escapes_repo(token: string) -> bool ![] {
 }
 
 flow patch_header_line_has_escape(line: string) -> bool ![] {
-    for part in split(line, " ") limit Iterations(128) {
+    for part in split(line, " ") {
         if patch_path_token_escapes_repo(part) {
             return true;
         }
@@ -36,7 +36,7 @@ flow patch_header_line_has_escape(line: string) -> bool ![] {
 }
 
 public flow contains_path_escape(text: string) -> bool ![] {
-    for line in lines(text) limit Iterations(65536) {
+    for line in lines(text) {
         if starts_with(line, "diff --git ")
             || starts_with(line, "--- ")
             || starts_with(line, "+++ ")

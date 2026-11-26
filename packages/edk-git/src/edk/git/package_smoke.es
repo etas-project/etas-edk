@@ -1,11 +1,13 @@
 module edk.git.package_smoke;
 
-import edk.git.commit.{commit_message, is_valid_commit_message};
+import edk.git.commit.{commit_change, commit_message, is_valid_commit_message};
 import edk.git.errors.GitRefError;
+import edk.git.handlers.preflight.{preflight_read, preflight_write};
 import edk.git.mocks.repo.{clean_read_result, modified_status, status_read_result, write_receipt};
-import edk.git.patch.patch;
+import edk.git.patch.{patch, patch_change};
 import edk.git.pure.diff_parse.{count_diff_files, count_total_hunks, parse_file_headers};
 import edk.git.pure.patch_validate.{patch_path_token_escapes_repo, validate_patch};
+import edk.git.pure.status_parse.{count_porcelain_entries, parse_porcelain_status};
 import edk.git.repo.{branch, branch_value, count_status_entries, git_repo, git_repo_value, git_status, is_safe_ref_name, is_valid_branch_ref, is_valid_remote_ref, is_valid_repo_ref, is_valid_status_entry, path_escapes_repo, remote, status_entry};
 import edk.git.types.{BranchRef, GitRepoRef, GitStatus, GitStatusEntry, RemoteRef};
 
@@ -251,5 +253,19 @@ flow main(args: Array<string>) -> i32 ![Error<GitRefError>] {
     if is_valid_commit_message(invalid_message) { return 1; }
     if is_valid_commit_message(subject_newline_message) { return 1; }
     if is_valid_commit_message(body_cr_message) { return 1; }
+    let preflight_ok = preflight_read(repo);
+    if !preflight_ok.ok { return 1; }
+    let patch_ok = preflight_write(repo, patch_change(patch("diff --git a/src/main.es b/src/main.es\n@@ -1 +1 @@\n")));
+    if !patch_ok.ok { return 1; }
+    let patch_bad = preflight_write(repo, patch_change(patch("diff --git a/../secret b/../secret")));
+    if patch_bad.ok { return 1; }
+    let commit_ok = preflight_write(repo, commit_change(commit_message("Update EDK", "body")));
+    if !commit_ok.ok { return 1; }
+    let commit_bad = preflight_write(repo, commit_change(commit_message("", "")));
+    if commit_bad.ok { return 1; }
+    let status_text = " M src/main.es\n?? new.txt";
+    if count_porcelain_entries(status_text) != 2 { return 1; }
+    let parsed_status = parse_porcelain_status(status_text);
+    if parsed_status.clean { return 1; }
     return 0;
 }

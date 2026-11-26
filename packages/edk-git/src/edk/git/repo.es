@@ -6,7 +6,7 @@ import edk.git.errors.{GitError, GitRefError, git_ref_error};
 import edk.git.types.{BranchRef, BranchSpec, GitDiff, GitDiffFile, GitReadResult, GitRepoRef, GitRepoSpec, GitStatus, GitStatusEntry, GitStatusEntrySpec, RemoteRef, RemoteSpec};
 
 flow raw_git_repo(name: string, path: string) -> GitRepoSpec ![] {
-    return GitRepoSpec {
+    return {
         name = trim(name),
         path = trim(path),
     };
@@ -17,7 +17,7 @@ flow raw_git_repo_ref(repo: GitRepoSpec) -> GitRepoRef ![] {
 }
 
 flow raw_branch(name: string) -> BranchSpec ![] {
-    return BranchSpec { name = trim(name) };
+    return { name = trim(name) };
 }
 
 flow raw_branch_ref(branch: BranchSpec) -> BranchRef ![] {
@@ -25,7 +25,7 @@ flow raw_branch_ref(branch: BranchSpec) -> BranchRef ![] {
 }
 
 flow raw_remote(name: string, url: string) -> RemoteSpec ![] {
-    return RemoteSpec {
+    return {
         name = trim(name),
         url = trim(url),
     };
@@ -36,7 +36,7 @@ flow raw_remote_ref(remote: RemoteSpec) -> RemoteRef ![] {
 }
 
 flow raw_status_entry(path: string, state: string) -> GitStatusEntrySpec ![] {
-    return GitStatusEntrySpec {
+    return {
         path = trim(path),
         state = trim(state),
     };
@@ -55,7 +55,7 @@ public flow git_repo(name: string, path: string) -> Result<GitRepoRef, GitRefErr
 }
 
 public flow git_repo_value(repo: GitRepoRef) -> GitRepoSpec ![] {
-    return repo;
+    return { name = repo.name, path = repo.path };
 }
 
 public flow branch(name: string) -> Result<BranchRef, GitRefError> ![] {
@@ -71,7 +71,7 @@ public flow default_branch() -> BranchRef ![] {
 }
 
 public flow branch_value(branch: BranchRef) -> BranchSpec ![] {
-    return branch;
+    return { name = branch.name };
 }
 
 public flow remote(name: string, url: string) -> Result<RemoteRef, GitRefError> ![] {
@@ -83,7 +83,7 @@ public flow remote(name: string, url: string) -> Result<RemoteRef, GitRefError> 
 }
 
 public flow remote_value(remote: RemoteRef) -> RemoteSpec ![] {
-    return remote;
+    return { name = remote.name, url = remote.url };
 }
 
 public flow status_entry(path: string, state: string) -> Result<GitStatusEntry, GitRefError> ![] {
@@ -95,7 +95,7 @@ public flow status_entry(path: string, state: string) -> Result<GitStatusEntry, 
 }
 
 public flow status_entry_value(entry: GitStatusEntry) -> GitStatusEntrySpec ![] {
-    return entry;
+    return { path = entry.path, state = entry.state };
 }
 
 public flow path_escapes_repo(path: string) -> bool ![] {
@@ -109,7 +109,7 @@ public flow path_escapes_repo(path: string) -> bool ![] {
     if contains(value, "\n") || contains(value, "\r") || contains(value, "\t") {
         return true;
     }
-    for part in split(value, "/") limit Iterations(65536) {
+    for part in split(value, "/") {
         if part == ".." {
             return true;
         }
@@ -125,7 +125,7 @@ flow ends_with_text(value: string, suffix: string) -> bool ![] {
         return false;
     }
     var last = value;
-    for part in split(value, suffix) limit Iterations(65536) {
+    for part in split(value, suffix) {
         last = part;
     }
     return last == "";
@@ -164,7 +164,7 @@ public flow is_safe_ref_name(value: string) -> bool ![] {
     {
         return false;
     }
-    for component in split(name, "/") limit Iterations(256) {
+    for component in split(name, "/") {
         if !is_safe_ref_component(component) {
             return false;
         }
@@ -253,14 +253,14 @@ public flow is_valid_status_entry(entry: GitStatusEntry) -> bool ![] {
 
 public flow count_status_entries(entries: Array<GitStatusEntry>) -> i32 ![] {
     var total = 0;
-    for entry in entries limit Iterations(65536) {
+    for entry in entries {
         total = total + 1;
     }
     return total;
 }
 
 public flow git_status(branch: BranchRef, entries: Array<GitStatusEntry>) -> GitStatus ![] {
-    return GitStatus {
+    return {
         branch = branch,
         entries = entries,
         clean = count_status_entries(entries) == 0,
@@ -274,7 +274,7 @@ public flow empty_status(branch: BranchRef) -> GitStatus ![] {
 
 public flow empty_diff() -> GitDiff ![] {
     let files: Array<GitDiffFile> = [];
-    return GitDiff {
+    return {
         files = files,
         text = "",
     };

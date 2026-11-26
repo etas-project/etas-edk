@@ -8,7 +8,7 @@ flow parse_diff_header(line: string) -> GitDiffFile ![] {
     var index = 0;
     var old_path = "";
     var new_path = "";
-    for part in split(line, " ") limit Iterations(64) {
+    for part in split(line, " ") {
         if index == 2 {
             old_path = part;
         }
@@ -22,7 +22,7 @@ flow parse_diff_header(line: string) -> GitDiffFile ![] {
 
 public flow count_diff_files(diff: GitDiff) -> i32 ![] {
     var total = 0;
-    for file in diff.files limit Iterations(65536) {
+    for file in diff.files {
         total = total + 1;
     }
     return total;
@@ -30,7 +30,7 @@ public flow count_diff_files(diff: GitDiff) -> i32 ![] {
 
 public flow count_total_hunks(diff: GitDiff) -> i32 ![] {
     var total = 0;
-    for file in diff.files limit Iterations(65536) {
+    for file in diff.files {
         total = total + file.hunks;
     }
     return total;
@@ -42,7 +42,7 @@ public flow parse_file_headers(text: string) -> GitDiff ![] {
     var current_old = "";
     var current_new = "";
     var hunks = 0;
-    for line in lines(text) limit Iterations(65536) {
+    for line in lines(text) {
         if starts_with(line, "diff --git ") {
             if has_current {
                 files = files.push(diff_file(current_old, current_new, hunks));
@@ -60,7 +60,7 @@ public flow parse_file_headers(text: string) -> GitDiff ![] {
     if has_current {
         files = files.push(diff_file(current_old, current_new, hunks));
     }
-    return GitDiff {
+    return {
         files = files,
         text = text,
     };

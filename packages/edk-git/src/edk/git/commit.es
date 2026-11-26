@@ -7,7 +7,7 @@ import edk.git.patch.patch;
 import edk.git.types.{CommitMessage, CommitReceipt, GitChange, GitRepoRef};
 
 public flow commit_message(subject: string, body: string) -> CommitMessage ![] {
-    return CommitMessage {
+    return {
         subject = trim(subject),
         body = body,
     };
@@ -21,7 +21,7 @@ public flow is_valid_commit_message(message: CommitMessage) -> bool ![] {
 }
 
 public flow commit_change(message: CommitMessage) -> GitChange ![] {
-    return GitChange {
+    return {
         kind = "commit",
         patch = patch(""),
         message = message,

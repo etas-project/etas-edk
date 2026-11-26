@@ -7,21 +7,21 @@ import edk.git.errors.GitRefError;
 
 public flow clean_read_result() -> GitReadResult ![] {
     let files: Array<GitDiffFile> = [];
-    return GitReadResult {
+    return {
         status = empty_status(default_branch()),
         diff = git_diff(files, ""),
     };
 }
 
 public flow diff_read_result(diff: GitDiff) -> GitReadResult ![] {
-    return GitReadResult {
+    return {
         status = empty_status(default_branch()),
         diff = diff,
     };
 }
 
 public flow status_read_result(status: GitStatus, diff: GitDiff) -> GitReadResult ![] {
-    return GitReadResult {
+    return {
         status = status,
         diff = diff,
     };
@@ -40,7 +40,7 @@ public flow modified_status(path: string) -> Result<GitStatus, GitRefError> ![] 
 }
 
 public flow write_receipt(repo: GitRepoRef, change_kind: string, message: string) -> GitWriteReceipt ![] {
-    return GitWriteReceipt {
+    return {
         repo = repo,
         change_kind = change_kind,
         message = message,
